@@ -1,5 +1,4 @@
-===================================
-An ESP32 port of Mahowii firmware for DYI brushed quadcopter.
+# An ESP32 port of Mahowii firmware for DYI brushed quadcopter.
 
 Changes:
 - ESP32 port code fixes 
