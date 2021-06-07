@@ -8,9 +8,13 @@ Changes:
 - changes for specific hardware ( brushed motors, arm leds )
 - added blackbox (Cleanflight format)
 - added WifI softAP and ftp server (for blackbox)
+- changed altitude mode: throtle controls target altitude
+- changed maghold mode: yaw stick controls target direction
 
 
 TODO: details
+
+
 TODO: connection diagram
 
 
@@ -19,6 +23,7 @@ TODO: connection diagram
 
 
 Original readme below:
+
 
 ===================================
 MahoWii rev 2.4 
