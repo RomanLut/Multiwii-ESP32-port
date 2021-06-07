@@ -1,3 +1,25 @@
+===================================
+An ESP32 port of Mahowii firmware for DYI brushed quadcopter.
+
+Changes:
+- ESP32 port code fixes 
+- VisualMicro project setup
+- Added PS3 controller rx
+- implemented bluetooth serial communication for EZGUI
+- changes for specific hardware ( brushed motors, arm leds )
+- added blackbox (Cleanflight format)
+- added WifI softAP and ftp server (for blackbox)
+
+
+TODO: details
+TODO: connection diagram
+
+
+![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad1.jpg "Photo 1")
+![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad2.jpg "Photo 2")
+
+
+Original readme below:
 
 ===================================
 MahoWii rev 2.4 
