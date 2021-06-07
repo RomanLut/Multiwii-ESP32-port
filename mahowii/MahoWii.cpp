@@ -8,7 +8,14 @@ March  2015     V2.4
  any later version. see <http://www.gnu.org/licenses/>
 */
 
+#ifdef ESP32
+//#include <WiFi.h>
+#include <SPI.h>  //required for CABELL to compile
+#endif
+
+#ifndef ESP32
 #include <avr/io.h>
+#endif
 
 #include "Arduino.h"
 #include "config.h"
@@ -17,7 +24,7 @@ March  2015     V2.4
 #include "MahoWii.h"
 #include "Math.h"
 #include "Alarms.h"
-#include "EEPROM.h"
+#include "myEEPROM.h"
 #include "IMU.h"
 #include "INS.h"
 #include "LCD.h"
@@ -29,8 +36,19 @@ March  2015     V2.4
 #include "Protocol.h"
 #include "Telemetry.h"
 #include "AltHold.h"
+#ifdef CABELL
+#include <Cabell_rx.h>
+#endif
+#include "mywifi.h"
+#include "ps3rx.h"
+#include <SPIFFS.h> 
+#include <ESP8266FtpServer.h>  //http://nailbuster.com/nailcode/ESP8266FtpServer.zip
+#include "blackbox.h"
 
+
+#ifndef ESP32
 #include <avr/pgmspace.h>
+#endif 
 
 /*********** RC alias *****************/
 
@@ -170,7 +188,7 @@ uint16_t cycleTime = 0;     // this is the number in micro second to achieve a f
 uint16_t calibratingA = 0;  // the calibration is done in the main loop. Calibrating decreases at each cycle down to 0, then we enter in a normal mode.
 //uint16_t calibratingB = 0;  // baro calibration = get new ground pressure value
 uint16_t calibratingG;
-int16_t  magHold,headFreeModeHold; // [-180;+180]
+int16_t  magHold, headFreeModeHold; // [-1800;+1800] deg*10
 uint8_t  vbatMin = VBATNOMINAL;  // lowest battery voltage in 0.1V steps
 uint8_t  rcOptions[CHECKBOXITEMS];
 
@@ -377,10 +395,12 @@ conf_t conf;
 uint8_t alarmArray[ALRM_FAC_SIZE];           // array
 
 #if BARO
-  int32_t baroPressure;
-  int16_t baroTemperature;
-  int32_t baroPressureSum;
+  int32_t baroPressure;  //pressure in PA
+  int16_t baroTemperature;  //tempterature *100
+  int32_t baroPressureSum;  // baroPressure * BARO_TAB_SIZE(=21)
 #endif
+
+FtpServer ftpSrv;   //set #define FTP_DEBUG in ESP8266FtpServer.h to see ftp verbose on serial
 
 void annexCode() { // this code is executed at each loop and won't interfere with control loop if it lasts less than 650 microseconds
   static uint32_t calibratedAccTime;
@@ -439,7 +459,7 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
       //float cosDiff = cos(radDiff);
       //float sinDiff = sin(radDiff);
 
-      int16_t diff = att.angle_YAW - (headFreeModeHold * 10); // diff in multiple of 0.1 degree    180 deg = 1800
+      int16_t diff = att.angle_YAW - headFreeModeHold; // diff in multiple of 0.1 degree    180 deg = 1800
       float cosDiff = cos_approx(diff);
       float sinDiff = sin_approx(diff);
 
@@ -481,8 +501,12 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
     #if defined(VBAT) && !defined(VBAT_CELLS)
       static uint8_t ind = 0;
       static uint16_t vvec[VBAT_SMOOTH], vsum;
-      uint16_t v = analogRead(V_BATPIN);
-      #if VBAT_SMOOTH == 1
+      uint16_t v = analogRead(V_BATPIN);  //ESP32 - 0..4095, 0 for 0.21V, 3145 for 4.2V, 2310 for 3.2V
+//      Serial.println(v);
+#ifdef ESP32
+      v = (v + 8) >> 4;  // 0..255
+#endif
+#if VBAT_SMOOTH == 1
         analog.vbat = (v*VBAT_PRESCALER) / conf.vbatscale + VBAT_OFFSET; // result is Vbatt in 0.1V steps
       #else
         vsum += v;
@@ -490,7 +514,7 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
         vvec[ind++] = v;
         ind %= VBAT_SMOOTH;
         #if VBAT_SMOOTH == VBAT_PRESCALER
-          analog.vbat = vsum / conf.vbatscale + VBAT_OFFSET; // result is Vbatt in 0.1V steps
+          analog.vbat = (vsum + (conf.vbatscale>1)) / conf.vbatscale + VBAT_OFFSET; // result is Vbatt in 0.1V steps
         #elif VBAT_SMOOTH < VBAT_PRESCALER
           analog.vbat = (vsum * (VBAT_PRESCALER/VBAT_SMOOTH)) / conf.vbatscale + VBAT_OFFSET; // result is Vbatt in 0.1V steps
         #else
@@ -525,6 +549,11 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
       analog.rssi = r;
     #endif
    #endif // RX RSSI
+
+#if defined(CABELL)
+      analog.rssi = CABELL_rssi1023();
+#endif
+
    break;
   }
   default: // here analogReader >=4, because of ++ in switch()
@@ -636,6 +665,37 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
     }
   #endif
 
+  #if defined(ARM_LEDS)
+    bool frontArmLedsOn = true;
+    if (NAV_state != NAV_STATE_NONE)
+    {
+      frontArmLedsOn = (currentTime & 0x20000) != 0;
+      if ((currentTime & 0x190000) != 0) frontArmLedsOn = false;
+    }
+
+    if (failsafeCnt > 5)
+    {
+      frontArmLedsOn = false;
+    }
+
+    if (frontArmLedsOn) { ARMLFLEDPIN_ON; ARMRFLEDPIN_ON; }
+    else { ARMLFLEDPIN_OFF; ARMRFLEDPIN_OFF;}
+
+    bool hasFix = f.GPS_FIX && (GPS_numSat >= 5);
+
+    bool backArmsLedsOn = true;
+    if (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_CRIT)
+    {
+      backArmsLedsOn = (currentTime & 0x40000) != 0;
+    }
+
+    bool lowBattery = (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_CRIT) || (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_WARN);
+
+    if ( backArmsLedsOn && (lowBattery || !hasFix ) ) { ARMRBLEDPIN_ON; ARMLBLEDPIN_ON; } else { ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF; }
+    if (backArmsLedsOn && !lowBattery ) { ARMGREENLEDPIN_ON; } else { ARMGREENLEDPIN_OFF; }
+
+#endif
+
   #if defined(LOG_VALUES) && (LOG_VALUES >= 2)
     if (cycleTime > cycleTimeMax) cycleTimeMax = cycleTime; // remember highscore
     if (cycleTime < cycleTimeMin) cycleTimeMin = cycleTime; // remember lowscore
@@ -658,8 +718,36 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
   }
 }
 
+#ifdef CABELL
+void loop2(void * pvParameters);
+static TaskHandle_t Task2;
+#endif
+
 void setup() {
+  //init motors output ASAP to avoid rotation
+  initOutput();
+
   SerialOpen(0,SERIAL0_COM_SPEED);
+
+
+  Serial.print("init1");
+
+#ifdef PS3RX
+  //call before SerialBluetooth (SerialOpen(3) )
+  //let SerialBluetooth to redefine esp_spp_register_callback() and redefine device name
+  ps3rxInit();
+#endif
+
+#ifdef ESP32
+  EEPROM_init();
+  //WiFi.mode(WIFI_OFF);
+  //Serial1 is reserved for future use if we have free pins...
+  SerialOpen(2, SERIAL2_COM_SPEED);
+  #ifdef ESP32_BLUETOOTH_MSP
+  SerialOpen(3, SERIAL0_COM_SPEED);  //Bluetooth
+#endif
+#endif
+
   #if defined(PROMICRO)
     SerialOpen(1,SERIAL1_COM_SPEED);
   #endif
@@ -672,10 +760,24 @@ void setup() {
   POWERPIN_PINMODE;
   BUZZERPIN_PINMODE;
   STABLEPIN_PINMODE;
+#ifdef ARM_LEDS
+  ARMLFLEDPIN_PINMODE;
+  ARMRFLEDPIN_PINMODE;
+  ARMLBLEDIN_PINMODE;
+  ARMRBLEDPIN_PINMODE;
+  ARMGREENLEDPIN_PINMODE;
+#endif
   POWERPIN_OFF;
-  initOutput();
+
+  DEBUGPIN_PINMODE;
+
+  //initOutput();
+  Serial.print("init1");
+
   readGlobalSet();
-  #ifndef NO_FLASH_CHECK
+  Serial.print("init2");
+
+#ifndef NO_FLASH_CHECK
     #if defined(MEGA)
       uint16_t i = 65000;                             // only first ~64K for mega board due to pgm_read_byte limitation
     #else
@@ -694,17 +796,22 @@ void setup() {
   #else
     global_conf.currentSet=0;
   #endif
-  while(1) {                                                    // check settings integrity
+
+    Serial.print("init3");
+    while(1) {                                                    // check settings integrity
   #ifndef NO_FLASH_CHECK
     if(readEEPROM()) {                                          // check current setting integrity
       if(flashsum != global_conf.flashsum) update_constants();  // update constants if firmware is changed and integrity is OK
     }
   #else
-    readEEPROM();                                               // check current setting integrity
+   readEEPROM();                                               // check current setting integrity
   #endif
     if(global_conf.currentSet == 0) break;                      // all checks is done
     global_conf.currentSet--;                                   // next setting for check
   }
+
+    Serial.print("init4");
+
   readGlobalSet();                              // reload global settings for get last profile number
   #ifndef NO_FLASH_CHECK
     if(flashsum != global_conf.flashsum) {
@@ -712,12 +819,19 @@ void setup() {
       writeGlobalSet(1);                        // update flash sum in global config
     }
   #endif
+
+    Serial.print("init5");
+
   readEEPROM();                                 // load setting data from last used profile
   blinkLED(2,40,global_conf.currentSet+1);
+
+  Serial.print("init6");
 
   #if GPS
     recallGPSconf();                              //Load GPS configuration parameteres
   #endif
+
+    Serial.print("init7");
 
   configureReceiver();
   #if defined (PILOTLAMP)
@@ -727,6 +841,8 @@ void setup() {
     initOpenLRS();
   #endif
   initSensors();
+  Serial.print("init8");
+
   #if GPS
     GPS_set_pids();
   #endif
@@ -785,6 +901,27 @@ void setup() {
   #ifdef DEBUGMSG
     debugmsg_append_str("initialization completed\n");
   #endif
+
+  #ifdef CABELL
+    //create a task that will be executed in the Loop2() function, with priority 1 and executed on core 1
+    xTaskCreatePinnedToCore(
+      loop2,   /* Task function. */
+      "Task2",     /* name of task. */
+      10000,       /* Stack size of task */
+      NULL,        /* parameter of the task */
+      1,           /* priority of the task */
+      &Task2,      /* Task handle to keep track of created task */
+      1);          /* pin task to core 1 */
+  #endif
+
+
+  SPIFFS.begin(true); //true -> format if mount failed
+
+  Wifi_setup();
+
+  ftpSrv.begin("quad", "12345678");
+
+  //blackboxInit();
 }
 
 void go_arm() {
@@ -806,9 +943,9 @@ void go_arm() {
     if(!f.ARMED /* && !f.BARO_MODE */) { // arm now!
       f.ARMED = 1;
       #if defined(HEADFREE)
-        headFreeModeHold = att.heading;
+        headFreeModeHold = att.angle_YAW;
       #endif
-      magHold = att.heading;
+      magHold = att.angle_YAW;
       #if defined(VBAT)
         if (analog.vbat > NO_VBAT) vbatMin = analog.vbat;
       #endif
@@ -839,6 +976,8 @@ void go_arm() {
         // write now.
         writePLog();
       #endif
+
+      //blackboxStart();
     }
   } else if(!f.ARMED) {
     blinkLED(2,255,1);
@@ -864,12 +1003,31 @@ void go_disarm() {
 			// write now.
 			writePLog();
 #endif
-		}
+      blackboxFinish();
+    }
 	} else if (f.ARMED) {
 		blinkLED(2, 255, 1);
 		SET_ALARM(ALRM_FAC_ACC, ALRM_LVL_ON);
 	}
 }
+
+
+#ifdef CABELL
+void loop2(void * pvParameters)  //core 2
+{
+  for (;;)
+  {
+    DEBUGPIN_ON;
+    if (getPacket())  //can take up to 1.1 ms
+    {
+      outputChannels();
+    }
+    DEBUGPIN_OFF;
+    yield(); //can take up to 1ms
+  }
+  //1 + 1.1 < 3 ms - we are still in 3ms frame, have enought time to process packet and hop to next frequency
+}
+#endif
 
 // ******** Main Loop *********
 void loop () {
@@ -899,6 +1057,14 @@ void loop () {
     Read_OpenLRS_RC();
   #endif
 
+  #if defined(CABELL)
+    CABELL_setTelemetryValue(0, analog.vbat);
+    CABELL_setTelemetryValue(1, GPS_numSat);
+  #endif
+
+    //remoteXY_setTelemetryValue(0, analog.vbat);
+    //remoteXY_setTelemetryValue(1, GPS_numSat);
+
 #if defined(SERIAL_RX)
   static uint16_t rcTime  = 0;
   if ((spekFrameDone == 0x01) || ((int16_t)(currentTime-rcTime) >0 )) {
@@ -906,7 +1072,7 @@ void loop () {
     rcTime = currentTime + 20000;
 #else
 
-  static timer_t rcTimer;
+  static dtimer_t rcTimer;
   if (updateTimer(&rcTimer, HZ2US(50))) {		// 50hz rc loop
 	  //debug[1] = rcTimer.dTime/10;
 #endif
@@ -917,16 +1083,19 @@ void loop () {
       if ( failsafeCnt > (5*FAILSAFE_DELAY) && f.ARMED) {                  // Stabilize, and set Throttle to specified level
         for(i=0; i<3; i++) rcData[i] = MIDRC;                               // after specified guard time after RC signal is lost (in 0.1sec)
         rcData[THROTTLE] = conf.failsafe_throttle;
+        
         if (failsafeCnt > 5*(FAILSAFE_DELAY+FAILSAFE_OFF_DELAY)) {          // Turn OFF motors after specified Time (in 0.1sec)
           go_disarm();     // This will prevent the copter to automatically rearm if failsafe shuts it down and prevents
           f.OK_TO_ARM = 0; // to restart accidentely by just reconnect to the tx - you will have to switch off first to rearm
         }
         failsafeEvents++;
       }
+      
       if ( failsafeCnt > (5*FAILSAFE_DELAY) && !f.ARMED) {  //Turn of "Ok To arm to prevent the motors from spinning after repowering the RX with low throttle and aux to arm
           go_disarm();     // This will prevent the copter to automatically rearm if failsafe shuts it down and prevents
           f.OK_TO_ARM = 0; // to restart accidentely by just reconnect to the tx - you will have to switch off first to rearm
       }
+      
       failsafeCnt++;
     #endif
     // end of failsafe routine - next change is made with RcOptions setting
@@ -1103,7 +1272,7 @@ void loop () {
     for(i=0;i<CHECKBOXITEMS;i++)
       rcOptions[i] = (auxState & conf.activate[i])>0;
 
-    // note: if FAILSAFE is disable, failsafeCnt > 5*FAILSAFE_DELAY is always false
+    // note: if FAILSAFE is disabled, failsafeCnt > 5*FAILSAFE_DELAY is always false
     #if ACC
       if ( rcOptions[BOXANGLE] || (failsafeCnt > 5*FAILSAFE_DELAY) ) {
         // bumpless transfer to Level mode
@@ -1172,7 +1341,7 @@ void loop () {
     if (rcOptions[BOXMAG]) {
       if (!f.MAG_MODE) {
         f.MAG_MODE = 1;
-        magHold = att.heading;
+        magHold = att.angle_YAW;
       }
     } else {
       f.MAG_MODE = 0;
@@ -1191,7 +1360,7 @@ void loop () {
         f.HEADFREE_MODE = 0;
       }
       if (rcOptions[BOXHEADADJ]) {
-        headFreeModeHold = att.heading; // acquire new heading
+        headFreeModeHold = att.angle_YAW; // acquire new heading
       }
     #endif
 
@@ -1343,6 +1512,8 @@ void loop () {
       else {f.PASSTHRU_MODE = 0;}
     #endif
 
+   blackboxUpdate(currentTime);
+
   } // end of rc loop
 
 
@@ -1382,7 +1553,7 @@ void loop () {
 			#endif
 
 		case 4:
-			taskOrder = 0;
+			taskOrder++;
 			#if GPS && defined(INS_PH_NAV_ON)
 				calculateXY_INS();
 			#endif
@@ -1396,7 +1567,13 @@ void loop () {
 			  if (f.VARIO_MODE) vario_signaling();
 			#endif
 			break;
-	}
+
+    case 5:
+      taskOrder = 0;
+      Wifi_handle();
+      ftpSrv.handleFTP();
+      break;
+  }
  
 
 	while (1) {
@@ -1428,14 +1605,31 @@ void loop () {
   #endif
 
 
-  //Heading manipulation TODO: Do heading manipulation
+  //Heading manipulation 
 
-  if (abs(rcCommand[YAW]) <70 && f.MAG_MODE) {
-    int16_t dif = att.heading - magHold;
-    if (dif <= - 180) dif += 360;
-    if (dif >= + 180) dif -= 360;
-    if (f.SMALL_ANGLES_25 || (f.GPS_mode != 0)) rcCommand[YAW] -= dif*conf.pid[PIDMAG].P8 >> 5;  //Always correct maghold in GPS mode
-  } else magHold = att.heading;
+  if (f.MAG_MODE || (f.GPS_mode == GPS_MODE_NAV) || (f.GPS_mode == GPS_MODE_RTH)) {
+
+    int16_t rcYaw = mul(rcCommand[YAW], (2 * conf.yawRate + 30)) >> 5;
+
+    int16_t newMagHold  = wrap_1800(magHold + ((((int32_t)rcYaw) * cycleTime) >> 19));
+
+    int16_t dif = (att.angle_YAW - magHold) / 10;
+    if (dif <= -180) dif += 360;
+    if (dif >= +180) dif -= 360;
+
+    //do not set target magHold more then 10 deg of actual position
+//    if (abs(dif) < 10) magHold = newMagHold;
+
+    magHold = newMagHold;
+
+    //in navigation mode mahold may switch instantly
+    //limit diff to have resonable pid setting
+    //if (dif < -10) dif = -10;
+    //if (dif > 10) dif = 10;
+
+    //if (f.SMALL_ANGLES_25 || (f.GPS_mode != 0)) rcCommand[YAW] -= dif * conf.pid[PIDMAG].P8 >> 5;  //Always correct maghold in GPS mode
+    rcCommand[YAW] = -dif * conf.pid[PIDMAG].P8 >> 1;
+  }
 
 
 
@@ -1455,7 +1649,7 @@ void loop () {
 #if GPS
 
 	#define GPS_OUTPUT_UPDATE_RATE   50		// 50hz update rate
-    static timer_t gpsOutputTimer;
+    static dtimer_t gpsOutputTimer;
 
     if (!isAltHoldControlApplied && updateTimer(&gpsOutputTimer, HZ2US(GPS_OUTPUT_UPDATE_RATE))) {
 
@@ -1510,7 +1704,7 @@ void loop () {
 
   //**** PITCH & ROLL & YAW PID ****
 
-  if ( f.HORIZON_MODE ) prop = min(max(abs(rcCommand[PITCH]),abs(rcCommand[ROLL])),512);
+  if ( f.HORIZON_MODE ) prop = min((int)max(abs(rcCommand[PITCH]),abs(rcCommand[ROLL])),512);
 
   // PITCH & ROLL
 	for (axis = 0; axis < 2; axis++) {
@@ -1530,6 +1724,21 @@ void loop () {
       //errorAngleI[axis]  = constrain(errorAngleI[axis]+errorAngle,-10000,+10000); 	// WindUp     //16 bits is ok here
       errorAngleI[axis]  = constrain(errorAngleI[axis] + ((int16_t)(((int32_t)errorAngle * cycleTime)>>12)), -10000, +10000); 	// WindUp     //16 bits is ok here
 
+      /*
+      if (axis == 1)
+      {
+        Serial.print("rc: ");
+        Serial.print(rc);
+        Serial.print(", -att: ");
+        Serial.print(-att.angle[axis]);
+        Serial.print(", err: ");
+        Serial.print(errorAngle);
+        Serial.print(", errI: ");
+        Serial.println(errorAngleI[axis]);
+      }
+      */
+
+      
       PTermACC           = mul(errorAngle,conf.pid[PIDLEVEL].P8)>>7; // 32 bits is needed for calculation: errorAngle*P8 could exceed 32768   16 bits is ok for result
 
       int16_t limit      = conf.pid[PIDLEVEL].D8*5;
@@ -1593,7 +1802,7 @@ void loop () {
 }
 
 
-bool updateTimer(timer_t * timer, uint32_t intervalInUs) {
+bool updateTimer(dtimer_t * timer, uint32_t intervalInUs) {
 	uint32_t currTime = micros();
 	uint32_t dTime = currTime - timer->lastTime;
 	if (dTime >= intervalInUs) {
@@ -1605,7 +1814,7 @@ bool updateTimer(timer_t * timer, uint32_t intervalInUs) {
 	}
 }
 
-void resetTimer(timer_t * timer) {
+void resetTimer(dtimer_t * timer) {
 	timer->dTime = 0;
 	timer->lastTime = micros();
 }

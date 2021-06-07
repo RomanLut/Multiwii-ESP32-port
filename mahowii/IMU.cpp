@@ -7,6 +7,8 @@
 #include "Sensors.h"
 #include "Math.h"
 
+#pragma pack(push, 1)
+
 void calculateAttitude();
 
 void computeIMU () {
@@ -24,7 +26,7 @@ void computeIMU () {
   timeInterleave=micros();
   annexCode();
   uint8_t t=0;
-  while((int16_t)(micros()-timeInterleave)<650) t=1; //empirical, interleaving delay between 2 consecutive reads
+  while((uint16_t)(micros()-timeInterleave)<650) t=1; //empirical, interleaving delay between 2 consecutive reads
   #ifdef LCD_TELEMETRY
     if (!t) annex650_overrun_count++;
   #endif
@@ -126,7 +128,7 @@ typedef union {
 
 // Rotate Estimated vector(s) with small angle approximation, according to the gyro data
 void rotateV32( t_int32_t_vector *v,int16_t* delta) {
-  int16_t X = v->V16.X;
+  int16_t X = v->V16.X;  //high 16 bits
   int16_t Y = v->V16.Y;
   int16_t Z = v->V16.Z;
 
@@ -155,7 +157,49 @@ void calculateAttitude(){
 
   // unit: radian per bit, scaled by 2^16 for further multiplication
   // with a delta time of 3000 us, and GYRO scale of most gyros, scale = a little bit less than 1
-  scale = (currentT - previousT) * (GYRO_SCALE * 65536);
+  scale = ((uint16_t)(currentT - previousT)) * (GYRO_SCALE * 65536);
+
+  //avoid overflow due to RTOS stall
+  if (scale > 4.0f) scale = 4.0f;
+
+  /*
+  static uint16_t maxDeltaT = 0;
+  static uint32_t maxDeltaTEv = 0;
+  static uint16_t minDeltaT = 100000;
+  static uint32_t minDeltaTEv = 0;
+
+  uint32_t currentT32 = micros();
+
+  uint16_t d = (uint16_t)(currentT - previousT);
+  if (((currentT32 - maxDeltaTEv) > 10000000) || (d > maxDeltaT))
+  {
+    maxDeltaT = d;
+    maxDeltaTEv = currentT32;
+  }
+
+  if (((currentT32 - minDeltaTEv) > 10000000) || (d < minDeltaT))
+  {
+    minDeltaT = d;
+    minDeltaTEv = currentT32;
+  }
+
+  Serial.print(d);
+  Serial.print(" \t");
+  Serial.print(minDeltaT);
+  Serial.print(" \t");
+  Serial.println(maxDeltaT);
+  */
+
+  /*
+  Serial.print(scale);
+  Serial.print(" \t");
+  Serial.print(currentT);
+  Serial.print(" \t");
+  Serial.print(previousT);
+  Serial.print(" \t");
+  Serial.println((currentT - previousT));
+  */
+
   previousT = currentT;
 
   // Initialization
@@ -203,6 +247,36 @@ void calculateAttitude(){
   att.angle[ROLL]  = _atan2(EstG.V16.X , EstG.V16.Z);
   att.angle[PITCH] = _atan2(EstG.V16.Y , InvSqrt(sqGX_sqGZ)*sqGX_sqGZ);
 
+
+  /*
+  Serial.print("dgaX:");
+  Serial.print(deltaGyroAngle16[0]);
+  Serial.print(", dgaY:");
+  Serial.print(deltaGyroAngle16[1]);
+
+  Serial.print(", gX:");
+  Serial.print(EstG.A32[0]);
+  Serial.print(", gY:");
+  Serial.print(EstG.A32[1]);
+  Serial.print(", gZ:");
+  Serial.println(EstG.A32[2]);
+  */
+  /*
+  Serial.print("accX:");
+  Serial.print(imu.accADC[0]);
+  Serial.print(", accY:");
+  Serial.print(imu.accADC[1]);
+
+  Serial.print(", smcX:");
+  Serial.print(imu.accSmooth[0]);
+  Serial.print(", smcY:");
+  Serial.print(imu.accSmooth[1]);
+
+  Serial.print(", ROLL:");
+  Serial.print(att.angle[ROLL]);
+  Serial.print(", PITCH:");
+  Serial.println(att.angle[PITCH]);
+  */
   //note on the second term: mathematically there is a risk of overflow (16*16*16=48 bits). assumed to be null with real values
   att.angle_YAW = _atan2(
     mul(EstM.V16.Z , EstG.V16.X) - mul(EstM.V16.X , EstG.V16.Z),
@@ -224,4 +298,6 @@ void calculateAttitude(){
   #endif
 
 }
+
+#pragma pack(pop)
 

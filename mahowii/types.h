@@ -1,6 +1,8 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
+#pragma pack(push, 1)
+
 enum rc {
   ROLL,
   PITCH,
@@ -92,13 +94,13 @@ enum box {
 typedef struct {
     uint32_t    lastTime;
     uint32_t    dTime;
-} timer_t;
+} dtimer_t;
 
 typedef struct {
   int16_t  accSmooth[3];
   int16_t  gyroData[3];
   int16_t  magADC[3];
-  int16_t  gyroADC[3];
+  int16_t  gyroADC[3]; //range: +/- 8192; +/- 2000 deg/sec
   int16_t  accADC[3];
 } imu_t;
 
@@ -172,6 +174,8 @@ typedef struct {
 #endif
 } flags_struct_t;
 
+//struct packing ensures that checksum is really the last byte of structure.
+//Otherwise last byte may be padding byte.
 typedef struct {
   uint8_t currentSet;
   int16_t accZero[3];
@@ -207,7 +211,7 @@ typedef struct {
   #if defined(EXTENDED_AUX_STATES)
    uint32_t activate[CHECKBOXITEMS];  //Extended aux states define six different aux state for each aux channel
   #else
-   uint16_t activate[CHECKBOXITEMS];
+   uint16_t activate[CHECKBOXITEMS];  //for each feature(althold, poshold etc) contains bitmask, 3 states for each AUX channel, 3*4channels = 12 bits total
   #endif
   uint8_t powerTrigger1;
   #if MAG
@@ -249,6 +253,7 @@ typedef struct {
   #endif
   uint8_t  checksum;      // MUST BE ON LAST POSITION OF CONF STRUCTURE !
 } conf_t;
+
 
 #ifdef LOG_PERMANENT
 typedef struct {
@@ -320,8 +325,6 @@ typedef struct {
   uint8_t  flag;       //flags the last wp and other fancy things that are not yet defined
   uint8_t  checksum;   //this must be at the last position
 } mission_step_struct;
-
-
 typedef struct {
   //Don't forget to change the reply size in GUI when change this struct;
 
@@ -357,6 +360,8 @@ typedef struct {
 
   uint8_t  checksum;
 } gps_conf_struct;
+
+#pragma pack(pop)
 
 #endif
 

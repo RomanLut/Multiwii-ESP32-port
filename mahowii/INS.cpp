@@ -24,7 +24,7 @@ int32_t histZPosition[HIST_Z_POINTS];
 
 bool calculateZ_INS() {
 
-	static timer_t calculateZ_INSTimer;
+	static dtimer_t calculateZ_INSTimer;
 
 	if (updateTimer(&calculateZ_INSTimer, HZ2US(INS_UPDATE_RATE))) {
 
@@ -102,7 +102,10 @@ void correctZStateWithBaro(float* dt) {
 
 	//accCorrection[ALT] += altError * INS_Z_ACC_FACTOR * *dt;
 
-	ins.velocityEF[ALT] += posError * (INS_Z_VEL_FACTOR * *dt);
+  //if estimated velocity is still incorrect, it will generate position error
+  //so we correct estimated velocity by position error
+  ins.velocityEF[ALT] += posError * (INS_Z_VEL_FACTOR * *dt);
+
 	//ins.velocityEF[ALT] += varioError * (INS_Z_VEL_FACTOR * *dt);
 
 	ins.positionEF[ALT] += posError * (INS_Z_POS_FACTOR * *dt);
@@ -154,19 +157,62 @@ void resetZState() {
 	}
 }
 
+/*
+//in: pressure in p
+//out: altitude above sea level in cm
+static float pressureToAltitude(const float pressure)
+{
+  return (1.0f - pow(pressure / 101325.0f, 0.190295f)) * 4433000.0f;
+}
+*/
+
+
+
 void calculateRAWAltitude() {
 
-	static float baroGroundTemperatureScale, logBaroGroundPressureSum;
+  //log(x/y) = log(x) - log(y)
+  //in the following formula we are using barroPresureSum/groundBaroPressureSum,
+  //so division by sumCount can be excluded
+
+  static float baroGroundTemperatureScale, logBaroGroundPressureSum;
+  //static float baroGroundAltitude;
 
 	if (!f.ARMED) {
 		logBaroGroundPressureSum = log(baroPressureSum);
-		baroGroundTemperatureScale = ((int32_t) baroTemperature + 27315) * 29.271267f;
-	}
+		//baroGroundTemperatureScale = ((int32_t) baroTemperature + 27315) * 29.271267f;
+    baroGroundTemperatureScale = ((int32_t)baroTemperature + 27315) * 153.8462f; //includes *100 from baroTemperature
+    //baroGroundAltitude = pressureToAltitude(baroPressureSum / 21.0f);
+  }
 
 	// baroGroundPressureSum is not supposed to be 0 here
 	// see: https://code.google.com/p/ardupilot-mega/source/browse/libraries/AP_Baro/AP_Baro.cpp
-	alt.rawAlt = (logBaroGroundPressureSum - log(baroPressureSum)) * baroGroundTemperatureScale;
-	//debug[3] = (int16_t)alt.baroAlt;
+	//alt.rawAlt = (logBaroGroundPressureSum - log(baroPressureSum)) * baroGroundTemperatureScale;
+
+  //https://github.com/ArduPilot/ardupilot/blob/master/libraries/AP_Baro/AP_Baro.cpp
+  alt.rawAlt = baroGroundTemperatureScale *
+    (1.0f-exp(0.190259f *(log(baroPressureSum) - logBaroGroundPressureSum)));
+
+  //debug[3] = (int16_t)alt.baroAlt;
+
+  //Note: EZ GUI app displays Barometer data graph 10x scaled - 5m is actually 50cm
+  //Also it displays height estimated by baro and accelerometer data fusion.
+  //In original MultiWii height was estimated from baro only.
+  //Here we estimate from acc + baro
+
+  /*
+  Serial.print("T: ");
+  Serial.print(baroTemperature/100.0f);
+  Serial.print(", p: ");
+  Serial.print(baroPressureSum/21.0f);
+  //Serial.print(", AltFromP:");
+  //Serial.print(pressureToAltitude(baroPressureSum / 21.0f)/100.0f);
+  //Serial.print(", AltFromPDiff:");
+  //Serial.print((pressureToAltitude(baroPressureSum / 21.0f)-baroGroundAltitude)/100.0f),
+  Serial.print(", AltDiff2:");
+  Serial.print(alt.rawAlt/100.0f);
+  Serial.print(", estAlt:");
+  Serial.println(alt.estAlt / 100.0f);
+  */
 }
 
 /*void calculateRAWVario(float* dt) {
@@ -190,7 +236,7 @@ int32_t histXYPosition[2][HIST_XY_POINTS];
 
 bool calculateXY_INS() {
 
-	static timer_t calculateXY_INSTimer;
+	static dtimer_t calculateXY_INSTimer;
 
 	if (updateTimer(&calculateXY_INSTimer, HZ2US(INS_UPDATE_RATE))) {
 

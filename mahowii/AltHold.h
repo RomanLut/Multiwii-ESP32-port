@@ -3,6 +3,8 @@
 
 
 extern int32_t targetVario;
+extern int32_t altToHold;
+extern int16_t fwAltPID[4];// P,I,D,Output
 
 #if BARO
 

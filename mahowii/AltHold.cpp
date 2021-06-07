@@ -9,6 +9,8 @@
 
 #define ALT_HOLD_CONTROL_UPDATE_RATE   50		// 50hz update rate
 
+extern int16_t fwAltPID[4] = { 0,0,0,0 };
+
 int32_t altToHold; // in cm
 int16_t hoveringThrottle = 0;
 int32_t targetVario = 0;
@@ -16,7 +18,7 @@ bool takeOffInProgress = false;
 
 bool applyAltHoldControl() {
 
-	static timer_t altHoldControlTimer;
+	static dtimer_t altHoldControlTimer;
 
     if (updateTimer(&altHoldControlTimer, HZ2US(ALT_HOLD_CONTROL_UPDATE_RATE))) {
 
@@ -30,20 +32,23 @@ bool applyAltHoldControl() {
 					|| f.GPS_BARO_MODE
 				#endif
 				) && f.ARMED) {
+      // executed in AltHold Mode
 
-			if (!isBaroModeActivated) {
+			if (!isBaroModeActivated) { //executed on entering AltHold mode
 				isBaroModeActivated = true;
 				isHoveringState = false;
 				takeOffInProgress = false;
 
 				initHoveringThrottle();
 				resetLandDetector();
-			}
+
+        altToHold = alt.estAlt;
+      }
 
 			runLandDetector();
 
 	#if GPS
-			if (f.GPS_BARO_MODE) {
+			if (f.GPS_BARO_MODE) { //executed in navigation modes 
 
 				if (takeOffInProgress) {
 					takeOffInProgress = false;
@@ -66,8 +71,8 @@ bool applyAltHoldControl() {
 					}
 					targetVario = -targetVario; // for landing target vario is negative
 
-				} else {
-
+				} else {//executed in navigation mode,  non-landing mode
+        
 					if (!isHoveringState) {
 						isHoveringState = true;
 					}
@@ -86,6 +91,7 @@ bool applyAltHoldControl() {
 			} else { // here f.BARO_MODE is always true
 
 	#endif	// end #if GPS
+        //executed in non-navigation mode (so in AltHold mode by user)
 
 				int16_t throttleDiff = rcData[THROTTLE] - MIDRC;
 
@@ -112,29 +118,52 @@ bool applyAltHoldControl() {
 		#endif
 						) {
 
+          //throttle is out of neutral zone
+
+          /*
 					if (isHoveringState) {
 						isHoveringState = false;
 					}
 
 					if (abs(throttleDiff) <= ALT_HOLD_THROTTLE_NEUTRAL_ZONE) {
-						targetVario = 0;
+						targetVario = 0;  //executed in case  abs(throttleDiff) == ALT_HOLD_THROTTLE_NEUTRAL_ZONE or takeOffInProgress
 					} else {
 						targetVario = ((throttleDiff - ((throttleDiff > 0) ? ALT_HOLD_THROTTLE_NEUTRAL_ZONE : -ALT_HOLD_THROTTLE_NEUTRAL_ZONE)) * 3)/ 4;
 					}
+          */
+
+          //control altitude, not vario
+
+          if (isHoveringState) {
+            isHoveringState = false;
+          }
+
+          if (abs(throttleDiff) <= ALT_HOLD_THROTTLE_NEUTRAL_ZONE) {
+            targetVario = 0;  //executed in case  abs(throttleDiff) == ALT_HOLD_THROTTLE_NEUTRAL_ZONE or takeOffInProgress
+          } else {
+            targetVario = ((throttleDiff - ((throttleDiff > 0) ? ALT_HOLD_THROTTLE_NEUTRAL_ZONE : -ALT_HOLD_THROTTLE_NEUTRAL_ZONE)) * 3)/ 4;
+          }
+
+          altToHold += targetVario / 100.0f;   //max increase - 25 cm/sec
+            if ((altToHold - alt.estAlt) > 50) altToHold = alt.estAlt + 50;
+            if ((altToHold - alt.estAlt) < -50) altToHold = alt.estAlt - 50;
+
+          targetVario = ((altToHold - alt.estAlt) * 3 *4) / 2;
+
 
 		#ifdef BUZZER
 					beepBuzzer(targetVario);
 		#endif
 
-				} else { // Alt hold activated, hovering state, throttle at middle neutral zone
+				} else { // Alt hold activated, throttle in neutral zone
 
-					if (!isHoveringState) {
+					if (!isHoveringState) { //executed on entering hovering state
 						isHoveringState = true;
 
 		#ifdef SAFE_ALT_DURING_AH
-						altToHold = (f.SAFE_ALT_MODE && alt.estAlt < SAFE_ALT_DURING_AH) ? SAFE_ALT_DURING_AH : alt.estAlt;
+						//altToHold = (f.SAFE_ALT_MODE && alt.estAlt < SAFE_ALT_DURING_AH) ? SAFE_ALT_DURING_AH : alt.estAlt;
 		#else
-						altToHold = alt.estAlt;
+						//altToHold = alt.estAlt;
 		#endif
 
 		#ifdef BUZZER
@@ -142,7 +171,8 @@ bool applyAltHoldControl() {
 		#endif
 					}
 
-					targetVario = ((altToHold - alt.estAlt) * 3) / 2;
+          //hovering state - hold altitude
+					targetVario = ((altToHold - alt.estAlt) * 3*4) / 2;
 				}
 	#if GPS
 			}
@@ -201,10 +231,19 @@ void applyPIDControl(uint16_t dTime, bool isHoveringState) {
     varioErrorIPart = (varioErrorISum >> VARIO_ERROR_I_SUM_RANK); // should be in range +/-VARIO_ERROR_I_PART_MAX ! land detector depends on this!
     varioErrorIPart = constrain(varioErrorIPart, -VARIO_ERROR_I_PART_MAX, VARIO_ERROR_I_PART_MAX);
 
+    /*
     int16_t varioPIDControl = ((varioError * conf.pid[PIDALT].P8) >> 5)
 								+ varioErrorIPart
 								- (((int32_t)ins.accelEF_Filtered[ALT] * conf.pid[PIDALT].D8) >> 6);
-    // varioPIDControl = constrain(baroPID, -600, 600);
+    //  // varioPIDControl = constrain(baroPID, -600, 600);
+    */
+
+    fwAltPID[0] = ((varioError * conf.pid[PIDALT].P8) >> 5);
+    fwAltPID[1] = varioErrorIPart;
+    fwAltPID[2] = -(((int32_t)ins.accelEF_Filtered[ALT] * conf.pid[PIDALT].D8) >> 6);
+    fwAltPID[3] = fwAltPID[0] + fwAltPID[1] + fwAltPID[2];
+
+    int16_t varioPIDControl = fwAltPID[3];
 
     rcCommand[THROTTLE] = hoveringThrottle + varioPIDControl;
     rcCommand[THROTTLE] = constrain(rcCommand[THROTTLE], conf.minthrottle + 50, MAXTHROTTLE - 50);

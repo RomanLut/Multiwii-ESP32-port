@@ -23,4 +23,8 @@ void writeGPSconf(void) ;
 bool recallGPSconf(void);
 #endif
 
+extern void EEPROM_init();
+
+uint16_t EEPROM_Last();
+
 #endif /* EEPROM_H_ */

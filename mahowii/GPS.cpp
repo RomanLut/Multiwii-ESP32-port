@@ -6,12 +6,14 @@
 #include "Serial.h"
 #include "Sensors.h"
 #include "MahoWii.h"
-#include "EEPROM.h"
+#include "myEEPROM.h"
 #include "AltHold.h"
 #include "Math.h"
 #include <math.h>
 
 #if GPS
+
+#pragma pack(push, 1)
 
 //Function prototypes for other GPS functions
 //These perhaps could go to the gps.h file, however these are local to the gps.cpp
@@ -27,6 +29,7 @@ static void GPS_calc_velocity(void);
 static uint16_t GPS_calc_desired_speed(uint16_t max_speed, bool _slow);
 static void GPS_calc_nav_rate(uint16_t max_speed);
 int32_t wrap_18000(int32_t ang);
+int32_t wrap_1800(int32_t ang);
 static bool check_missed_wp(void);
 void GPS_calc_longitude_scaling(int32_t lat);
 static void GPS_update_crosstrack(void);
@@ -202,7 +205,7 @@ bool GPS_Compute(void) {
         //debug[1] = dTnav * 1000;
 
         // prevent runup from bad GPS
-        dTnav = min(dTnav, 1.0);
+        dTnav = min(dTnav, 1.0f);
 
         //calculate distance and bearings for gui and other stuff continously - From home to copter
         GPS_bearing(&GPS_coord[LAT], &GPS_coord[LON], &GPS_home[LAT], &GPS_home[LON], &dir);
@@ -327,7 +330,7 @@ bool GPS_Compute(void) {
 						NAV_state = NAV_STATE_LAND_START; // if parameter 1 in RTH step is non 0 then land at home
 					}
 					if (GPS_conf.nav_rth_takeoff_heading) {
-						magHold = nav_takeoff_bearing;
+						magHold = nav_takeoff_bearing*10;
 					}
 
 				} else if (isAltitudeReached() || (!GPS_conf.wait_for_target_alt)) {             //Wait until we reach RTH altitude
@@ -355,7 +358,7 @@ bool GPS_Compute(void) {
                         NAV_state = NAV_STATE_LAND_START;                                   // if parameter 1 in RTH step is non 0 then land at home
                     }
                     if (GPS_conf.nav_rth_takeoff_heading) {
-                        magHold = nav_takeoff_bearing;
+                        magHold = nav_takeoff_bearing*10;
                     }
                 }
                 break;
@@ -521,18 +524,18 @@ void GPS_adjust_heading() {
     //This controls the heading
     if (f.GPS_head_set) { // We have seen a SET_POI or a SET_HEADING command
         if (GPS_poi[LAT] == 0)
-            magHold = wrap_18000((GPS_directionToPoi * 100)) / 100;
+            magHold = wrap_18000((GPS_directionToPoi * 100))/10;
         else {
             GPS_bearing(&GPS_coord[LAT], &GPS_coord[LON], &GPS_poi[LAT], &GPS_poi[LON], &GPS_directionToPoi);
             GPS_distance_cm(&GPS_coord[LAT], &GPS_coord[LON], &GPS_poi[LAT], &GPS_poi[LON], &wp_distance);
-            magHold = GPS_directionToPoi / 100;
+            magHold = GPS_directionToPoi /10;
         }
     } else {                                // heading controlled by the standard defines
         if (GPS_conf.nav_controls_heading) {
             if (GPS_conf.nav_tail_first) {
-                magHold = wrap_18000(target_bearing - 18000) / 100;
+                magHold = wrap_18000(target_bearing - 18000)/10;
             } else {
-                magHold = wrap_18000(target_bearing) / 100;
+                magHold = wrap_18000(target_bearing)/10;
             }
         }
     }
@@ -855,9 +858,9 @@ static void GPS_update_crosstrack(void) {
 //
 static uint16_t GPS_calc_desired_speed(uint16_t max_speed, bool _slow) {
     if (_slow) {
-        max_speed = min(max_speed, wp_distance / 2);
+        max_speed = min((uint32_t)max_speed, wp_distance / 2);
     } else {
-        max_speed = min(max_speed, wp_distance);
+        max_speed = min((uint32_t)max_speed, wp_distance);
         max_speed = max(max_speed, GPS_conf.nav_speed_min);  // go at least nav_speed_min
     }
     // limit the ramp up of the speed
@@ -1037,6 +1040,11 @@ int32_t wrap_18000(int32_t ang) {
   if (ang > 18000)  ang -= 36000;
   if (ang < -18000) ang += 36000;
     return ang;
+}
+int32_t wrap_1800(int32_t ang) {
+  if (ang > 1800)  ang -= 3600;
+  if (ang < -1800) ang += 3600;
+  return ang;
 }
 
 
@@ -1279,7 +1287,7 @@ static union {
     ubx_nav_posllh posllh;
     ubx_nav_solution solution;
     ubx_nav_velned velned;
-    uint8_t bytes[];
+    uint8_t bytes[0];
 }_buffer;
 
 uint32_t init_speed[5] = {9600,19200,38400,57600,115200};
@@ -1440,7 +1448,6 @@ struct diyd_mtk_msg {
     uint16_t hdop;
 };
 
-// #pragma pack(pop)
 enum diyd_mtk_fix_type {
     FIX_NONE = 1,
     FIX_2D = 2,
@@ -1975,6 +1982,7 @@ uint8_t GPS_NewData(void) {
 }
 #endif //I2C_GPS
 
+#pragma pack(pop)
 
 
 #endif // GPS Defined

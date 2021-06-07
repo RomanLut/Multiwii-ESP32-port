@@ -5,6 +5,13 @@
   #define UART_NUMBER 4
 #elif defined(PROMICRO)
   #define UART_NUMBER 2
+#elif defined(ESP32)
+  #ifdef ESP32_BLUETOOTH_MSP
+    #define UART_NUMBER 4    //Serial, Serial1(reserved), Serial2, SerialBT
+  #else
+    #define UART_NUMBER 3
+#endif
+
 #else
   #define UART_NUMBER 1
 #endif
@@ -18,7 +25,8 @@ uint8_t SerialAvailable(uint8_t port);
 void    SerialEnd(uint8_t port);
 uint8_t SerialPeek(uint8_t port);
 bool    SerialTXfree(uint8_t port);
-uint8_t SerialUsedTXBuff(uint8_t port);
+//uint8_t SerialUsedTXBuff(uint8_t port);
+uint16_t SerialAvailableForWrite(uint8_t port);
 void    SerialSerialize(uint8_t port,uint8_t a);
 void    UartSendData(uint8_t port);
 

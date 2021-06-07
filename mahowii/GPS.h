@@ -13,6 +13,7 @@ bool GPS_newFrame(uint8_t c);
 extern uint8_t GPS_Frame;            // a valid GPS_Frame was detected, and data is ready for nav computation
 
 extern int32_t wrap_18000(int32_t ang);
+extern int32_t wrap_1800(int32_t ang);
 
 void GPS_set_pids(void);
 void GPS_SerialInit(void);

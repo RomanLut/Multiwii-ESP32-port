@@ -1663,6 +1663,83 @@
   #undef INTERNAL_I2C_PULLUPS
 #endif
 
+/**********************************************************************************/
+/*                                 ESP 32										  */
+/**********************************************************************************/
+#ifdef ESP32
+/*
+
+  #define STABLEPIN 12
+  #define STABLEPIN_PINMODE pinMode (STABLEPIN, OUTPUT)
+  #define STABLEPIN_ON digitalWrite(STABLEPIN,HIGH)
+  #define STABLEPIN_OFF digitalWrite(STABLEPIN,LOW)
+
+ */
+#define LED_BUILTIN 2
+#define LEDPIN_PINMODE pinMode (LED_BUILTIN, OUTPUT)
+#define LEDPIN_TOGGLE digitalWrite(LED_BUILTIN,!digitalRead(LED_BUILTIN))
+#define LEDPIN_OFF digitalWrite(LED_BUILTIN,LOW)
+#define LEDPIN_ON digitalWrite(LED_BUILTIN,HIGH)
+
+
+  #define STABLEPIN_PINMODE 
+  #define STABLEPIN_ON 
+  #define STABLEPIN_OFF 
+
+
+  #define ARMLFLEDPIN 4
+  #define ARMLFLEDPIN_PINMODE pinMode (ARMLFLEDPIN, OUTPUT)
+  #define ARMLFLEDPIN_TOGGLE digitalWrite(ARMLFLEDPIN,!digitalRead(ARMLFLEDPIN))
+  #define ARMLFLEDPIN_OFF digitalWrite(ARMLFLEDPIN,LOW)
+  #define ARMLFLEDPIN_ON digitalWrite(ARMLFLEDPIN,HIGH)
+
+
+  #define ARMRFLEDPIN 12
+  #define ARMRFLEDPIN_PINMODE pinMode (ARMRFLEDPIN, OUTPUT)
+  #define ARMRFLEDPIN_TOGGLE digitalWrite(ARMRFLEDPIN,digitalRead(ARMRFLEDPIN))
+  #define ARMRFLEDPIN_OFF digitalWrite(ARMRFLEDPIN,LOW)
+  #define ARMRFLEDPIN_ON digitalWrite(ARMRFLEDPIN,HIGH)
+
+/*
+  #define LEDPIN_PINMODE pinMode (ARMLFLEDPIN, OUTPUT);pinMode (ARMRFLEDPIN, OUTPUT)
+  #define LEDPIN_TOGGLE digitalWrite(ARMLFLEDPIN,!digitalRead(ARMLFLEDPIN));digitalWrite(ARMRFLEDPIN,digitalRead(ARMLFLEDPIN))
+  #define LEDPIN_OFF digitalWrite(ARMLFLEDPIN,LOW);digitalWrite(ARMRFLEDPIN,LOW)
+  #define LEDPIN_ON digitalWrite(ARMLFLEDPIN,HIGH);digitalWrite(ARMRFLEDPIN,HIGH)
+*/
+
+  #define ARMRBLEDPIN   14
+  #define ARMRBLEDPIN_PINMODE pinMode (ARMRBLEDPIN, OUTPUT)
+  #define ARMRBLEDPIN_ON digitalWrite(ARMRBLEDPIN,HIGH)
+  #define ARMRBLEDPIN_OFF digitalWrite(ARMRBLEDPIN,LOW)
+
+  #define ARMLBLEDPIN   15
+  #define ARMLBLEDIN_PINMODE pinMode (ARMLBLEDPIN, OUTPUT)
+  #define ARMLBLEDPIN_ON digitalWrite(ARMLBLEDPIN,HIGH)
+  #define ARMLBLEDPIN_OFF digitalWrite(ARMLBLEDPIN,LOW)
+
+  #define ARMGREENLEDPIN   13
+  #define ARMGREENLEDPIN_PINMODE pinMode (ARMGREENLEDPIN, OUTPUT)
+  #define ARMGREENLEDPIN_ON digitalWrite(ARMGREENLEDPIN,HIGH)
+  #define ARMGREENLEDPIN_OFF digitalWrite(ARMGREENLEDPIN,LOW)
+
+  #define POWERPIN_PINMODE            ;
+  #define POWERPIN_ON                 ;
+  #define POWERPIN_OFF                ;
+
+  #define BUZZERPIN   
+  #define BUZZERPIN_PINMODE 
+  #define BUZZERPIN_ON 
+  #define BUZZERPIN_OFF 
+
+  #define V_BATPIN    36
+
+#define DEBUGPIN   26
+#define DEBUGPIN_PINMODE pinMode (DEBUGPIN, OUTPUT)
+#define DEBUGPIN_ON digitalWrite(DEBUGPIN,HIGH)
+#define DEBUGPIN_OFF digitalWrite(DEBUGPIN,LOW)
+
+#endif
+
 /**************************************************************************************/
 /***************              Sensor Type definitions              ********************/
 /**************************************************************************************/
@@ -1673,7 +1750,7 @@
   #define ACC 0
 #endif
 
-#if defined(HMC5883) || defined(HMC5843) || defined(AK8975) || defined(MAG3110)
+#if defined(HMC5883) || defined(HMC5843) || defined(AK8975) || defined(MAG3110) || defined(QMC5883)
   #define MAG 1
 #else
   #define MAG 0
@@ -1685,7 +1762,7 @@
   #define GYRO 0
 #endif
 
-#if defined(BMP085) || defined(MS561101BA)
+#if defined(BMP085) || defined(BMP280) || defined(MS561101BA)
   #define BARO 1
 #else
   #define BARO 0
@@ -1818,7 +1895,7 @@
 
 //all new Special RX's must be added here
 //this is to avoid confusion :)
-#if !defined(SERIAL_SUM_PPM) && !defined(SPEKTRUM) && !defined(SBUS) && !defined(SUMD)
+#if !defined(SERIAL_SUM_PPM) && !defined(SPEKTRUM) && !defined(SBUS) && !defined(SUMD) && !defined(CABELL) && !defined(PS3RX)
   #define STANDARD_RX
 #endif
 

@@ -1,7 +1,7 @@
 #ifndef MULTIWII_H_
 #define MULTIWII_H_
 
-#define  VERSION        240
+#define  VERSION        240//230,240
 #define  NAVI_VERSION   7     //This allow sync with GUI
 #include "types.h"
 #include "Alarms.h"
@@ -233,8 +233,8 @@ extern uint16_t AccInflightCalibrationActive;
 void annexCode();
 void go_disarm();
 
-bool updateTimer(timer_t * timer, uint32_t interval);
-void resetTimer(timer_t * timer);
+bool updateTimer(dtimer_t * timer, uint32_t interval);
+void resetTimer(dtimer_t * timer);
 
 #define HZ2US(hz)   (1000000 / (hz))
 #define HZ2MS(hz)   (1000 / (hz))

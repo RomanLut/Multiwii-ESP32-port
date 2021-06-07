@@ -2,7 +2,7 @@
 #include "config.h"
 #include "def.h"
 #include "types.h"
-#include "EEPROM.h"
+#include "myEEPROM.h"
 #include "LCD.h"
 #include "Output.h"
 #include "GPS.h"
@@ -12,6 +12,10 @@
 #include "RX.h"
 #include "AltHold.h"
 #include "INS.h"
+
+#pragma pack(push,1)
+
+//review: Update to clieanflight configurator? https://github.com/Ardhat/ArdhatMFC/commit/baa5baf44838b1220cc7503d89afd4495ae50d33#diff-9252e98f30f4d334d14b1f70e9bc8df919c1aa0a4960325d665e3d4d3bbb157c
 
 /************************************** MultiWii Serial Protocol *******************************************************/
 // Multiwii Serial Protocol 0 
@@ -179,7 +183,7 @@ enum MSP_protocol_bytes {
 };
 
 void serialCom() {
-  uint8_t c,cc,port,state,bytesTXBuff;
+  uint8_t c,cc,port,state;//,bytesTXBuff;
   static uint8_t offset[UART_NUMBER];
   static uint8_t dataSize[UART_NUMBER];
   static uint8_t c_state[UART_NUMBER];
@@ -196,8 +200,9 @@ void serialCom() {
     cc = SerialAvailable(port);
 
     while (cc-- RX_COND) {
-      bytesTXBuff = SerialUsedTXBuff(port); // indicates the number of occupied bytes in TX buffer
-      if (bytesTXBuff > TX_BUFFER_SIZE - 50 ) return; // ensure there is enough free TX buffer to go further (50 bytes margin)
+      //bytesTXBuff = SerialUsedTXBuff(port); // indicates the number of occupied bytes in TX buffer
+      //if (bytesTXBuff > TX_BUFFER_SIZE - 50 ) return; // ensure there is enough free TX buffer to go further (50 bytes margin)
+      if (SerialAvailableForWrite(port) < 50) return; // ensure there is enough free TX buffer to go further (50 bytes margin)
       c = SerialRead(port);
       #ifdef SUPPRESS_ALL_SERIAL_MSP
         evaluateOtherData(c); // no MSP handling, so go directly
@@ -397,7 +402,9 @@ void evaluateCommand(uint8_t c) {
     #endif
     case MSP_SET_HEAD:
       mspAck();
-      s_struct_w((uint8_t*)&magHold,2);
+      int16_t setMagHold;
+      s_struct_w((uint8_t*)&setMagHold,2);
+      magHold = setMagHold * 10;
       break;
     case MSP_IDENT:
       struct {
@@ -691,7 +698,12 @@ void evaluateCommand(uint8_t c) {
       s_struct((uint8_t*)&att,6);
       break;
     case MSP_ALTITUDE:
-      s_struct((uint8_t*)&alt,6);
+      s_struct((uint8_t*)&alt, 6);
+      /*alt_t at;
+      at.estAlt = alt.rawAlt;
+      at.estVario = alt.estVario;
+      s_struct((uint8_t*)&at, 6);
+      */
       break;
     case MSP_ANALOG:
       s_struct((uint8_t*)&analog,7);
@@ -877,3 +889,5 @@ static void debugmsg_serialize(uint8_t l) {
 #else
 void debugmsg_append_str(const char *str) {};
 #endif
+
+#pragma pack(pop)

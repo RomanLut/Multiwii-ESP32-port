@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Text Include="$(MSBuildThisFileDirectory)readme.txt" />
+    <Text Include="$(MSBuildThisFileDirectory)library.properties" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{83e10e54-577a-4e36-adc5-03d315253cf2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\*.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\*.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\*.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\*.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\*.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\*.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\*.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\*.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\*.h" />
+  </ItemGroup>
+</Project>

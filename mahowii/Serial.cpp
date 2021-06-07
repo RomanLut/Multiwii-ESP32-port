@@ -4,11 +4,33 @@
 #include "Serial.h"
 #include "MahoWii.h"
 
+#ifndef ESP32
 static volatile uint8_t serialHeadRX[UART_NUMBER],serialTailRX[UART_NUMBER];
 static uint8_t serialBufferRX[RX_BUFFER_SIZE][UART_NUMBER];
 static volatile uint8_t serialHeadTX[UART_NUMBER],serialTailTX[UART_NUMBER];
 static uint8_t serialBufferTX[TX_BUFFER_SIZE][UART_NUMBER];
+#else
 
+  #ifdef ESP32_BLUETOOTH_MSP
+  #include <BluetoothSerial.h>
+
+  static BluetoothSerial SerialBT;
+
+  //BluetoothSerial library does not have availableForWrite() method.
+  //In order to emulate it, we will simulate 50% of 115200 baud rate ( 115200 bytes per second ) flow
+  //micros() when some bytes has been written to BT
+  #define SERIAL_BT_QUEUE_SIZE 128
+  #define SERIAL_BT_BAUD 115200
+  #define SERIAL_BT_MICROS_PER_BYTE (2 * 1000000 / (SERIAL_BT_BAUD / 10))
+  static uint32_t bt_lastCheck;
+  static uint32_t bt_bytesInFlight;
+  #endif
+
+  //here we remember what number returns Serial.AvailableForWrite() for completely empty buffer.
+  //There is no dedicated function for checking if all data has been sent. We emulate it using AvailabeForWrite().
+  static uint32_t serialBufferTXSize[UART_NUMBER];
+
+#endif
 
 // *******************************************************
 // For Teensy 2.0, these function emulate the API used for ProMicro
@@ -102,11 +124,51 @@ void UartSendData(uint8_t port) {
       case 3: UCSR3B |= (1<<UDRIE3); break;
     }
   #endif
+  //this method does nothing on ESP32. Data is already in output buffer and is sent by Serial library.
 }
 
+#ifdef ESP32_BLUETOOTH_MSP
+uint16_t SerialBTAvailableForWrite()
+{
+  uint32_t t = micros();
+  uint32_t d = t - bt_lastCheck;
+  d = d / SERIAL_BT_MICROS_PER_BYTE; //number of bytes which theoretically have been sent from last check
+  if (d >= bt_bytesInFlight)
+  {
+    bt_bytesInFlight = 0;
+    bt_lastCheck = t;
+  }
+  else
+  {
+    bt_bytesInFlight -= d;
+    bt_lastCheck += d * SERIAL_BT_MICROS_PER_BYTE;
+  }
+
+  /*
+  Serial.print("BT:AvailableForWrite=");
+  Serial.println(max(0u, SERIAL_BT_QUEUE_SIZE - bt_bytesInFlight));
+  */
+
+  return max(0u, SERIAL_BT_QUEUE_SIZE - bt_bytesInFlight);
+}
+#endif
+
 #if defined(GPS_SERIAL)
-  bool SerialTXfree(uint8_t port) {
+bool SerialTXfree(uint8_t port)
+{
+#ifdef ESP32
+  switch (port)
+  {
+    case 0: return serialBufferTXSize[0] == Serial.availableForWrite();
+    case 2: return serialBufferTXSize[2] == Serial2.availableForWrite();
+    #ifdef ESP32_BLUETOOTH_MSP
+    case 3: return serialBufferTXSize[3] == SerialBTAvailableForWrite();
+    #endif
+  }
+  return false;
+#else
     return (serialHeadTX[port] == serialTailTX[port]);
+#endif
   }
 #endif
 
@@ -129,6 +191,14 @@ void SerialOpen(uint8_t port, uint32_t baud) {
       case 2: UCSR2A  = (1<<U2X2); UBRR2H = h; UBRR2L = l; UCSR2B |= (1<<RXEN2)|(1<<TXEN2)|(1<<RXCIE2); break;
       case 3: UCSR3A  = (1<<U2X3); UBRR3H = h; UBRR3L = l; UCSR3B |= (1<<RXEN3)|(1<<TXEN3)|(1<<RXCIE3); break;
     #endif
+    #if defined(ESP32)
+      case 0:  Serial.begin(baud); serialBufferTXSize[0] = Serial.availableForWrite(); break;
+      case 2:  Serial2.begin(baud, SERIAL_8N1, 16, 17); serialBufferTXSize[2] = Serial2.availableForWrite(); break;
+#ifdef ESP32_BLUETOOTH_MSP
+      case 3: SerialBT.begin("QUADX"); serialBufferTXSize[3] = SERIAL_BT_QUEUE_SIZE; bt_bytesInFlight = 0; bt_lastCheck = micros(); break;
+#endif
+
+#endif
   }
 }
 
@@ -146,12 +216,20 @@ void SerialEnd(uint8_t port) {
       case 2: UCSR2B &= ~((1<<RXEN2)|(1<<TXEN2)|(1<<RXCIE2)|(1<<UDRIE2)); break;
       case 3: UCSR3B &= ~((1<<RXEN3)|(1<<TXEN3)|(1<<RXCIE3)|(1<<UDRIE3)); break;
     #endif
+    #if defined(ESP32)
+      case 0:  Serial.end(); break;
+      case 2:  Serial2.end(); break;
+      #ifdef ESP32_BLUETOOTH_MSP
+      case 3: SerialBT.end();
+      #endif
+#endif
   }
 }
 
+#ifndef ESP32
 // we don't care about ring buffer overflow (head->tail) to avoid a test condition : data is lost anyway if it happens 
 void store_uart_in_buf(uint8_t data, uint8_t portnum) {
-  #if defined(SERIAL_RX)
+ #if defined(SERIAL_RX)
     if (portnum == RX_SERIAL_PORT) {
       if (!spekFrameFlags) { 
         sei();
@@ -173,6 +251,7 @@ void store_uart_in_buf(uint8_t data, uint8_t portnum) {
   if (h >= RX_BUFFER_SIZE) h = 0;
   serialHeadRX[portnum] = h;
 }
+#endif
 
 #if defined(PROMINI)
   ISR(USART_RX_vect)  { store_uart_in_buf(UDR0, 0); }
@@ -198,6 +277,18 @@ uint8_t SerialRead(uint8_t port) {
       if(port == 0) return USB_Recv(USB_CDC_RX);      
     #endif
   #endif
+
+#ifdef ESP32
+  switch (port)
+  {
+    case 0: return Serial.read();
+    case 2: return Serial2.read();
+    #ifdef ESP32_BLUETOOTH_MSP
+    case 3: return SerialBT.read();
+    #endif
+  }
+  return 255;
+#else
   uint8_t t = serialTailRX[port];
   uint8_t c = serialBufferRX[t][port];
   if (serialHeadRX[port] != t) {
@@ -205,6 +296,7 @@ uint8_t SerialRead(uint8_t port) {
     serialTailRX[port] = t;
   }
   return c;
+#endif
 }
 
 #if defined(SERIAL_RX)
@@ -214,26 +306,79 @@ uint8_t SerialRead(uint8_t port) {
   }
 #endif
 
-uint8_t SerialAvailable(uint8_t port) {
-  #if defined(PROMICRO)
-    #if !defined(TEENSY20)
-      if(port == 0) return USB_Available(USB_CDC_RX);
-    #else
-      if(port == 0) return T_USB_Available();
+  uint8_t SerialAvailable(uint8_t port)
+  {
+#if defined(PROMICRO)
+#if !defined(TEENSY20)
+    if (port == 0) return USB_Available(USB_CDC_RX);
+#else
+    if (port == 0) return T_USB_Available();
+#endif
+#endif
+#ifdef ESP32
+  switch (port)
+  {
+    case 0: return min(255u,(unsigned int)Serial.available());
+    case 2: return min(255u, (unsigned int)Serial2.available());
+    #ifdef ESP32_BLUETOOTH_MSP
+    case 3: return min(255u,(unsigned int)SerialBT.available());
     #endif
-  #endif
+  }
+  return 0;
+#else
   return ((uint8_t)(serialHeadRX[port] - serialTailRX[port]))%RX_BUFFER_SIZE;
+#endif
 }
 
-uint8_t SerialUsedTXBuff(uint8_t port) {
+/*
+  uint8_t SerialUsedTXBuff(uint8_t port)
+  {
+#ifdef ESP32
+  switch (port)
+  {
+  case 0: return serialBufferTXSize[0] - Serial.availableForWrite();
+  case 2: return serialBufferTXSize[2] - Serial2.availableForWrite();
+  }
+  return 0;
+#else
   return ((uint8_t)(serialHeadTX[port] - serialTailTX[port]))%TX_BUFFER_SIZE;
+#endif
+}
+*/
+
+uint16_t SerialAvailableForWrite(uint8_t port)
+{
+#ifdef ESP32
+    switch (port)
+    {
+    case 0: return Serial.availableForWrite();
+    case 2: return Serial2.availableForWrite();
+    #ifdef ESP32_BLUETOOTH_MSP
+    case 3: return SerialBTAvailableForWrite();
+    #endif
+    }
+    return 127;
+#else
+    return TX_BUFFER_SIZE - ( ((uint8_t)(serialHeadTX[port] - serialTailTX[port])) % TX_BUFFER_SIZE);
+#endif
 }
 
 void SerialSerialize(uint8_t port,uint8_t a) {
+#ifdef ESP32
+  switch (port)
+  {
+    case 0: Serial.write(a); break;
+    case 2: Serial2.write(a); break;
+    #ifdef ESP32_BLUETOOTH_MSP
+    case 3: SerialBT.write(a); break;
+    #endif
+  }
+#else
   uint8_t t = serialHeadTX[port];
   if (++t >= TX_BUFFER_SIZE) t = 0;
   serialBufferTX[t][port] = a;
   serialHeadTX[port] = t;
+#endif;
 }
 
 void SerialWrite(uint8_t port,uint8_t c){

@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Mahowii">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Wifi">
+      <UniqueIdentifier>{b6d98c2b-88fe-4d10-9f98-7837283d992c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Blackbox">
+      <UniqueIdentifier>{80fb25cd-9b79-4768-8657-2f1215e39371}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mahowii.ino" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="__vm\.mahowii.vsarduino.h" />
+    <ClInclude Include="Alarms.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="AltHold.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="def.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="GPS.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="IMU.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="INS.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="LCD.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="MahoWii.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="Math.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="myEEPROM.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="Output.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="ps3rx.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="RX.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="Serial.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="Telemetry.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="types.h">
+      <Filter>Mahowii</Filter>
+    </ClInclude>
+    <ClInclude Include="mywifi.h">
+      <Filter>Wifi</Filter>
+    </ClInclude>
+    <ClInclude Include="blackbox_io.h">
+      <Filter>Blackbox</Filter>
+    </ClInclude>
+    <ClInclude Include="blackbox_encoding.h">
+      <Filter>Blackbox</Filter>
+    </ClInclude>
+    <ClInclude Include="blackbox.h">
+      <Filter>Blackbox</Filter>
+    </ClInclude>
+    <ClInclude Include="blackbox_fielddefs.h">
+      <Filter>Blackbox</Filter>
+    </ClInclude>
+    <ClInclude Include="time.h">
+      <Filter>Blackbox</Filter>
+    </ClInclude>
+    <ClInclude Include="encoding.h">
+      <Filter>Blackbox</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Alarms.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="AltHold.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="GPS.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="IMU.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="INS.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="LCD.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="MahoWii.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="Math.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="myEEPROM.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="Output.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="ps3rx.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="RX.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="Serial.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="Telemetry.cpp">
+      <Filter>Mahowii</Filter>
+    </ClCompile>
+    <ClCompile Include="mywifi.cpp">
+      <Filter>Wifi</Filter>
+    </ClCompile>
+    <ClCompile Include="blackbox.cpp">
+      <Filter>Blackbox</Filter>
+    </ClCompile>
+    <ClCompile Include="blackbox_encoding.cpp">
+      <Filter>Blackbox</Filter>
+    </ClCompile>
+    <ClCompile Include="encoding.cpp">
+      <Filter>Blackbox</Filter>
+    </ClCompile>
+    <ClCompile Include="blackbox_io.cpp">
+      <Filter>Blackbox</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

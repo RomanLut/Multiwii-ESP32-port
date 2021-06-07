@@ -171,6 +171,7 @@ float cos_approx(int16_t angle) {
 
 
 
+#ifndef ESP32
 // signed16 * signed16
 // 22 cycles
 // http://mekonik.wordpress.com/2009/03/18/arduino-avr-gcc-multiplication/
@@ -207,4 +208,13 @@ int32_t  __attribute__ ((noinline)) mul(int16_t a, int16_t b) {
   //r = (int32_t)a*b; without asm requirement
   return r;
 }
+
+#else
+
+int32_t  __attribute__((noinline)) mul(int16_t a, int16_t b)
+{
+  return (int32_t)a*b; 
+}
+
+#endif
 

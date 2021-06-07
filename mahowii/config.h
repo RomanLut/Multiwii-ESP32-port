@@ -149,7 +149,7 @@
       //#define Bobs_9DOF_V1     // BobsQuads 9DOF V1 with ITG3200, BMA180 & HMC5883L
       //#define Bobs_10DOF_BMP_V1 // BobsQuads 10DOF V1 with ITG3200, BMA180, HMC5883L & BMP180 - BMP180 is software compatible with BMP085
       //#define FLYDUINO_MPU       // MPU6050 Break Out onboard 3.3V reg
-      #define CRIUS_AIO_PRO
+      //#define CRIUS_AIO_PRO
       //#define DESQUARED6DOFV2GO  // DEsquared V2 with ITG3200 only
       //#define DESQUARED6DOFV4    // DEsquared V4 with MPU6050
       //#define LADYBIRD
@@ -174,7 +174,7 @@
       //#define ITG3200
       //#define MPU3050
       //#define L3G4200D
-      //#define MPU6050       //combo + ACC
+      #define MPU6050       //combo + ACC
       //#define LSM330        //combo + ACC
 
       /* I2C accelerometer */
@@ -189,11 +189,13 @@
 
       /* I2C barometer */
       //#define BMP085
+      #define BMP280
       //#define MS561101BA
 
       /* I2C magnetometer */
       //#define HMC5843
-      //#define HMC5883
+      //#define HMC5883      //chip marking: L833
+      #define QMC5883        //chip marking: DA5883 or DB5833   https://forum.arduino.cc/index.php?topic=556590.0
       //#define AK8975
       //#define MAG3110
 
@@ -210,6 +212,10 @@
       //#define FORCE_ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  =  Y; imu.accADC[PITCH]  = -X; imu.accADC[YAW]  = Z;}
       //#define FORCE_GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -Y; imu.gyroADC[PITCH] =  X; imu.gyroADC[YAW] = Z;}
       //#define FORCE_MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  =  X; imu.magADC[PITCH]  =  Y; imu.magADC[YAW]  = Z;}
+
+      #define FORCE_ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  =  -Y; imu.accADC[PITCH]  = X; imu.accADC[YAW]  = Z;}
+      #define FORCE_GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -X; imu.gyroADC[PITCH] =  -Y; imu.gyroADC[YAW] = -Z;}
+      #define FORCE_MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  =  Y; imu.magADC[PITCH]  =  -X; imu.magADC[YAW]  = -Z;}
 
       /* Board orientation shift */
       /* If you have frame designed only for + mode and you cannot rotate FC phisycally for flying in X mode (or vice versa)
@@ -235,7 +241,7 @@
    /********************************    ARM/DISARM    *********************************/
    /* optionally disable stick combinations to arm/disarm the motors.
      * In most cases one of the two options to arm/disarm via TX stick is sufficient */
-    #define ALLOW_ARM_DISARM_VIA_TX_YAW
+    //#define ALLOW_ARM_DISARM_VIA_TX_YAW
     //#define ALLOW_ARM_DISARM_VIA_TX_ROLL
 
     /********************************    SERVOS      *********************************/
@@ -362,13 +368,13 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
       /* The following lines apply only for specific receiver with only one PPM sum signal, on digital PIN 2
          Select the right line depending on your radio brand. Feel free to modify the order in your PPM order is different */
       //#define SERIAL_SUM_PPM         PITCH,YAW,THROTTLE,ROLL,AUX1,AUX2,AUX3,AUX4,8,9,10,11 //For Graupner/Spektrum
-      #define SERIAL_SUM_PPM         ROLL,PITCH,THROTTLE,YAW,AUX1,AUX2,AUX3,AUX4,8,9,10,11 //For Robe/Hitec/Futaba
+      //#define SERIAL_SUM_PPM         ROLL,PITCH,THROTTLE,YAW,AUX1,AUX2,AUX3,AUX4,8,9,10,11 //For Robe/Hitec/Futaba
       //#define SERIAL_SUM_PPM         ROLL,PITCH,YAW,THROTTLE,AUX1,AUX2,AUX3,AUX4,8,9,10,11 //For Multiplex
       //#define SERIAL_SUM_PPM         PITCH,ROLL,THROTTLE,YAW,AUX1,AUX2,AUX3,AUX4,8,9,10,11 //For some Hitec/Sanwa/Others
       //#define SERIAL_SUM_PPM         THROTTLE,YAW,ROLL,PITCH,AUX1,AUX2,AUX3,AUX4,8,9,10,11 //Modelcraft
 
       // Uncommenting following line allow to connect PPM_SUM receiver to standard THROTTLE PIN on MEGA boards (eg. A8 in CRIUS AIO)
-      #define PPM_ON_THROTTLE
+      //#define PPM_ON_THROTTLE
 
     /**********************    Spektrum Satellite Reciver    *******************************/
       /* The following lines apply only for Spektrum Satellite Receiver
@@ -404,7 +410,12 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
     //#define SUMD PITCH,YAW,THROTTLE,ROLL,AUX1,AUX2,AUX3,AUX4
     //#define RX_SERIAL_PORT 1
 
-/*************************************************************************************************/
+    /******************************* NRF24L01 Cabell protocol receiver ************************************/
+    //#define CABELL         PITCH,ROLL,YAW,THROTTLE,AUX1,AUX2,AUX3,AUX4
+
+    #define PS3RX PITCH,ROLL,YAW,THROTTLE,AUX1,AUX2,AUX3,AUX4
+
+  /*************************************************************************************************/
 /*****************                                                                 ***************/
 /****************  SECTION  4 - ALTERNATE CPUs & BOARDS                                    *******/
 /*****************                                                                 ***************/
@@ -471,6 +482,12 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
       /* Inverted status LED for Promicro ver 10 */
       //#define PROMICRO10
 
+  /**************************************************************************************/
+  /********                     Settings for ESP32                            ***********/
+  /**************************************************************************************/
+
+  //Enable Bluetooth (for use with Android EZ-GUI )
+  #define ESP32_BLUETOOTH_MSP
 
   /**************************************************************************************/
   /********                      override default pin assignments    ********************/
@@ -605,7 +622,7 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
        PITCH, ROLL and YAW is centered and THROTTLE is set to FAILSAFE_THROTTLE value. You must set this value to descending about 1m/s or so
        for best results. This value is depended from your configuration, AUW and some other params.  Next, after FAILSAFE_OFF_DELAY the copter is disarmed,
        and motors is stopped. If RC pulse coming back before reached FAILSAFE_OFF_DELAY time, after the small quard time the RC control is returned to normal. */
-    //#define FAILSAFE                                // uncomment  to activate the failsafe function
+    #define FAILSAFE                                // uncomment  to activate the failsafe function
     #define FAILSAFE_DELAY     10                     // Guard time for failsafe activation after signal lost. 1 step = 0.1sec - 1sec in example
     #define FAILSAFE_OFF_DELAY 200                    // Time for Landing before motors stop in 0.1sec. 1 step = 0.1sec - 20sec in example
     #define FAILSAFE_THROTTLE  (MINTHROTTLE + 200)    // (*) Throttle level used for landing - may be relative to MINTHROTTLE - as in this case
@@ -737,7 +754,18 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
 	 - No GPS FIX -> LED blink at speed of incoming GPS frames
 	 - Fix and sat no. bellow 5 -> LED off
 	 - Fix and sat no. >= 5 -> LED blinks, one blink for 5 sat, two blinks for 6 sat, three for 7 ... */
-	#define GPS_LED_INDICATOR
+	//#define GPS_LED_INDICATOR
+
+  //LEDS on arms
+  //Front arms have blue color LEDs, connected to LED pin( always on, blinking on alarm)
+  //Back arms have RGB leds ( blue is unused ).
+  //RED - no GPS FIX
+  //GREEN - has GPS FIX
+  //Always on - Ok
+  //Very fast blinking - bind mode
+  //Fast blinking - battery low (BATTERY_WARN_LEVEL2 or CRITICAL)
+  //2 blinks + pause - RTH or MISSION mode
+  #define ARM_LEDS
 
 	//Enables the MSP_WP command set , which is used by WinGUI for displaying an setting up navigation
 	#define USE_MSP_WP
@@ -761,9 +789,10 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
 	 Convert the degree+minutes into decimal degree by ==> degree+minutes*(1/60)
 	 Note the sign on declination it could be negative or positive (WEST or EAST)
 	 Also note, that maqgnetic declination changes with time, so recheck your value every 3-6 months */
-	  #define MAG_DECLINATION  -14.72f        // For MONTREAL QUEBEC
+	//#define MAG_DECLINATION  -14.72f        // For MONTREAL QUEBEC
     //#define MAG_DECLINATION  10.8f        // For Moscow
     //#define MAG_DECLINATION  5.0f        // For Krakow
+	#define MAG_DECLINATION  8.033f        // For Kyiv
 
 	// add a 5 element moving average filter to GPS coordinates, helps eliminate gps noise but adds latency comment out to disable
 	// use it with NMEA gps only
@@ -813,7 +842,7 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
 	#define FENCE_DISTANCE      300
 
 	// Only allow FC arming if GPS has a 3D fix and number of satellites >= 6
-	#define ONLY_ALLOW_ARM_WITH_GPS_3DFIX
+	//#define ONLY_ALLOW_ARM_WITH_GPS_3DFIX
 
 
 	/**************************************************************************************/
@@ -936,6 +965,7 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
     //#define RX_RSSI
     //#define RX_RSSI_PIN A3
     //#define RX_RSSI_CHAN 8   //RSSI injection on selected channel (for PPM, Olrs, SBUS, etc.) (Starts at 0)
+    //CABELL: is injected from receiver code
 
   /********************************************************************/
   /****                             TELEMETRY                      ****/
@@ -968,6 +998,7 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
   /****                             Buzzer                         ****/
   /********************************************************************/
     #define BUZZER
+    #define BUZZER_PASSIVE    //ESP32 only, use passive buzzer on pin 12
     #define RCOPTIONSBEEP         // uncomment this if you want the buzzer to beep at any rcOptions change on channel Aux1 to Aux4
     //#define ARMEDTIMEWARNING 330  // (*) Trigger an alarm after a certain time of being armed [s] to save you lipo (if your TX does not have a countdown)
     //#define PILOTLAMP             //Uncomment if you are using a X-Arcraft Pilot Lamp
@@ -980,14 +1011,26 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
        with R1=33k and R2=51k
        vbat = [0;1023]*16/VBATSCALE
        must be associated with #define BUZZER ! */
-    //#define VBAT              // uncomment this line to activate the vbat code
-    #define VBATSCALE       131 // (*) (**) change this value if readed Battery voltage is different than real voltage
-    #define VBATNOMINAL     126 // 12,6V full battery nominal voltage - only used for lcd.telemetry
-    #define VBATLEVEL_WARN1 107 // (*) (**) 10,7V
-    #define VBATLEVEL_WARN2  99 // (*) (**) 9.9V
-    #define VBATLEVEL_CRIT   93 // (*) (**) 9.3V - critical condition: if vbat ever goes below this value, permanent alarm is triggered
-    #define NO_VBAT          16 // Avoid beeping without any battery
-    #define VBAT_OFFSET       0 // offset in 0.1Volts, gets added to voltage value  - useful for zener diodes
+    #define VBAT              // uncomment this line to activate the vbat code
+
+    //For 3s battery:
+
+    //#define VBATSCALE       131 // (*) (**) change this value if readed Battery voltage is different than real voltage
+    //#define VBATNOMINAL     126 // 12,6V full battery nominal voltage - only used for lcd.telemetry
+    //#define VBATLEVEL_WARN1 107 // (*) (**) 10,7V
+    //#define VBATLEVEL_WARN2  99 // (*) (**) 9.9V
+    //#define VBATLEVEL_CRIT   93 // (*) (**) 9.3V - critical condition: if vbat ever goes below this value, permanent alarm is triggered
+    //#define NO_VBAT          16 // Avoid beeping without any battery
+    //#define VBAT_OFFSET       0 // offset in 0.1Volts, gets added to voltage value  - useful for zener diodes
+
+    //For 3.7V battery:
+    #define VBATSCALE        77 // (*) (**) change this value if readed Battery voltage is different than real voltage
+    #define VBATNOMINAL      42 // 4.2V full battery nominal voltage - only used for lcd.telemetry
+    #define VBATLEVEL_WARN1  34 // (*) (**) 3.4V
+    #define VBATLEVEL_WARN2  33 // (*) (**) 3.3V
+    #define VBATLEVEL_CRIT   32 // (*) (**) 3.2V - critical condition: if vbat ever goes below this value, permanent alarm is triggered
+    #define NO_VBAT          15 // Avoid beeping without any battery
+    #define VBAT_OFFSET       2 // offset in 0.1Volts, gets added to voltage value  - useful for zener diodes
 
     /* for V BAT monitoring of individual cells
      * enable both VBAT and VBAT_CELLS
@@ -1023,7 +1066,7 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
 
     /* defines the neutral zone of throttle stick during altitude hold, default setting is
        +/-70 uncomment and change the value below if you want to change it. */
-    #define ALT_HOLD_THROTTLE_NEUTRAL_ZONE    70
+    #define ALT_HOLD_THROTTLE_NEUTRAL_ZONE    20
 
     // Set the alt vario range (in cm/s) for alt hold and land functions
     #define MAX_VARIO           350 // = +/-3.5m/s
@@ -1047,7 +1090,7 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
      * I.e. pls. use GUI to set MID point of throttle expo as initial/hovering throttle.
      * If it's activated, specified hovering throttle value will be taken from this define.
      */
-    #define HOVERING_THROTTLE 		1500
+    #define HOVERING_THROTTLE 		1800
 
 
   /********************************************************************/
@@ -1084,7 +1127,7 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
     //                  123456789.123456
 
   /*************      Support multiple configuration profiles in EEPROM     ************/
-    #define MULTIPLE_CONFIGURATION_PROFILES
+    //#define MULTIPLE_CONFIGURATION_PROFILES
 
   /*************      do no reset constants when change of flashed program is detected ***********/
     #define NO_FLASH_CHECK
@@ -1303,4 +1346,3 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
 /*************************************************************************************************/
 
 #endif /* CONFIG_H_ */
-

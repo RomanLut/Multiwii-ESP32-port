@@ -1,14 +1,19 @@
+#ifdef ESP32
+#include <Wire.h>
+#endif 
+
 #include "Arduino.h"
 #include "config.h"
 #include "def.h"
 #include "types.h"
 #include "MahoWii.h"
 #include "Alarms.h"
-#include "EEPROM.h"
+#include "myEEPROM.h"
 #include "IMU.h"
 #include "LCD.h"
 #include "Sensors.h"
 #include "AltHold.h"
+
 
 static void Device_Mag_getADC();
 static void Baro_init();
@@ -67,17 +72,23 @@ static uint32_t neutralizeTime = 0;
 // ************************************************************************************************************
 
 void i2c_init(void) {
-  #if defined(INTERNAL_I2C_PULLUPS)
-    I2C_PULLUPS_ENABLE
-  #else
-    I2C_PULLUPS_DISABLE
-  #endif
-  TWSR = 0;                                    // no prescaler => prescaler = 1
-  TWBR = ((F_CPU / 400000) - 16) / 2;          // set the I2C clock rate to 400kHz
-  TWCR = 1<<TWEN;                              // enable twi module, no interrupt
+#ifndef ESP32
+    #if defined(INTERNAL_I2C_PULLUPS)
+      I2C_PULLUPS_ENABLE
+    #else
+      I2C_PULLUPS_DISABLE
+    #endif
+    TWSR = 0;                                    // no prescaler => prescaler = 1
+    TWBR = ((F_CPU / 400000) - 16) / 2;          // set the I2C clock rate to 400kHz
+    TWCR = 1<<TWEN;                              // enable twi module, no interrupt
+ #else
+      Wire.begin(); //on default pins 21,22
+      Wire.setClock(400000);
+#endif;
   i2c_errors_count = 0;
 }
 
+#ifndef ESP32
 void __attribute__ ((noinline)) waitTransmissionI2C(uint8_t twcr) {
   TWCR = twcr;
   uint8_t count = 255;
@@ -121,14 +132,29 @@ uint8_t i2c_readNak() {
   i2c_stop();
   return r;
 }
+#endif
 
 void i2c_read_reg_to_buf(uint8_t add, uint8_t reg, uint8_t *buf, uint8_t size) {
+#ifndef ESP32
   i2c_rep_start(add<<1); // I2C write direction
   i2c_write(reg);        // register selection
   i2c_rep_start((add<<1) | 1);  // I2C read direction
   uint8_t *b = buf;
   while (--size) *b++ = i2c_readAck(); // acknowledge all but the final byte
   *b = i2c_readNak();
+#else
+  Wire.beginTransmission(add);
+  Wire.write(reg); 
+  int error = Wire.endTransmission(false);
+  if ( error != 0 ) i2c_errors_count++;
+  int count = Wire.requestFrom((uint16_t)add, size, true);
+  if (count != size)
+  {
+    i2c_errors_count++;
+  }
+  uint8_t *b = buf;
+  if ( count ) while (count-- && size--) *b++ = Wire.read();
+#endif
 }
 
 void i2c_getSixRawADC(uint8_t add, uint8_t reg) {
@@ -136,10 +162,18 @@ void i2c_getSixRawADC(uint8_t add, uint8_t reg) {
 }
 
 void i2c_writeReg(uint8_t add, uint8_t reg, uint8_t val) {
+#ifndef ESP32
   i2c_rep_start(add<<1); // I2C write direction
   i2c_write(reg);        // register selection
   i2c_write(val);        // value to write in register
   i2c_stop();
+#else
+  Wire.beginTransmission(add);
+  Wire.write(reg);
+  Wire.write(val);
+  int error = Wire.endTransmission(true);
+  if (error != 0) i2c_errors_count++;
+#endif
 }
 
 uint8_t i2c_readReg(uint8_t add, uint8_t reg) {
@@ -461,35 +495,70 @@ void i2c_BMP085_readCalibration(){
 
 // read uncompensated temperature value: send command first
 void i2c_BMP085_UT_Start(void) {
-  i2c_writeReg(BMP085_ADDRESS,0xf4,0x2e);
+  i2c_writeReg(BMP085_ADDRESS, 0xf4, 0x2e);
+#ifndef ESP32
   i2c_rep_start(BMP085_ADDRESS<<1);
   i2c_write(0xF6);
   i2c_stop();
+#else
+  Wire.beginTransmission(BMP085_ADDRESS);
+  Wire.write(0xF6);
+  int error = Wire.endTransmission(false);
+  if (error != 0) i2c_errors_count++;
+#endif
 }
 
 // read uncompensated pressure value: send command first
 void i2c_BMP085_UP_Start () {
-  i2c_writeReg(BMP085_ADDRESS,0xf4,0x34+(OSS<<6)); // control register value for oversampling setting 3
+  i2c_writeReg(BMP085_ADDRESS, 0xf4, 0x34 + (OSS << 6)); // control register value for oversampling setting 3
+#ifndef ESP32
   i2c_rep_start(BMP085_ADDRESS<<1); //I2C write direction => 0
   i2c_write(0xF6);
   i2c_stop();
+#else
+  Wire.beginTransmission(BMP085_ADDRESS);
+  Wire.write(0xF6);
+  int error = Wire.endTransmission(false);
+  if (error != 0) i2c_errors_count++;
+#endif
 }
 
 // read uncompensated pressure value: read result bytes
 // the datasheet suggests a delay of 25.5 ms (oversampling settings 3) after the send command
 void i2c_BMP085_UP_Read () {
+#ifndef ESP32
   i2c_rep_start((BMP085_ADDRESS<<1) | 1);//I2C read direction => 1
   bmp085_ctx.up.raw[2] = i2c_readAck();
   bmp085_ctx.up.raw[1] = i2c_readAck();
   bmp085_ctx.up.raw[0] = i2c_readNak();
+#else
+  int count = Wire.requestFrom((uint16_t)BMP085_ADDRESS, (uint8_t)3, true);
+  if (count != 3)
+  {
+    i2c_errors_count++;
+  }
+  if (count) { count--; bmp085_ctx.up.raw[2] = Wire.read(); }
+  if (count) { count--; bmp085_ctx.up.raw[1] = Wire.read(); }
+  if (count) { count--; bmp085_ctx.up.raw[0] = Wire.read(); }
+#endif
 }
 
 // read uncompensated temperature value: read result bytes
 // the datasheet suggests a delay of 4.5 ms after the send command
 void i2c_BMP085_UT_Read() {
+#ifndef ESP32
   i2c_rep_start((BMP085_ADDRESS<<1) | 1);//I2C read direction => 1
   bmp085_ctx.ut.raw[1] = i2c_readAck();
   bmp085_ctx.ut.raw[0] = i2c_readNak();
+#else
+  int count = Wire.requestFrom((uint16_t)BMP085_ADDRESS, (uint8_t)2, true);
+  if (count != 2)
+  {
+    i2c_errors_count++;
+  }
+  if (count) { count--; bmp085_ctx.ut.raw[1] = Wire.read(); }
+  if (count) { count--; bmp085_ctx.ut.raw[0] = Wire.read(); }
+#endif
 }
 
 void i2c_BMP085_Calculate() {
@@ -546,6 +615,167 @@ uint8_t Baro_update() {                   // first UT conversion is started in i
     bmp085_ctx.state = 0;
     return 2;
   }
+}
+#endif
+
+
+// ************************************************************************************************************
+// I2C Barometer BOSCH BMP280
+// ************************************************************************************************************
+// I2C adress: 0x76 or 0x77 !!!Please make sure you set the correct address (BMP280_ADDR)
+// As any other I2C device, the BMP280 sensor has an I2C slave address which is 0x76 or 0x77.
+// This address depends on the connection of the SDO pin(used for SPI mode as serial data out or MISO),
+// if the SDO pin is connected(directly or through resistor) to VCC(3.3V) the address will be 0x77,
+// and if it’s connected to GND the address will be 0x76.
+// ************************************************************************************************************
+
+#if defined(BMP280)
+
+#define BMP280_ADDR  0x76 
+//#define i2c_read(ack)  (ack) ? i2c_readAck() : i2c_readNak(); 
+
+#define BMP280_CAL_REG_FIRST  0x88
+#define BMP280_CAL_REGS 12
+#define BMP280_CAL_DATA_SIZE  (BMP280_CAL_REGS*2)
+
+#define BMP280_STATUS_REG 0xF3
+#define BMP280_CONTROL_REG  0xF4
+#define BMP280_CONFIG_REG 0xF5
+
+#define BMP280_PRES_REG   0xF7
+#define BMP280_TEMP_REG   0xFA
+#define BMP280_RAWDATA_BYTES  6 // 3 bytes pressure, 3 bytes temperature
+
+int64_t p; //temp variable for calculating pressure  
+uint32_t deadline;
+
+#pragma pack(push,1)
+static union _bmp280_cal_union
+{
+  uint8_t bytes[BMP280_CAL_DATA_SIZE];
+  struct
+  {
+    uint16_t dig_t1;
+    int16_t  dig_t2;
+    int16_t  dig_t3;
+    uint16_t dig_p1;
+    int16_t  dig_p2;
+    int16_t  dig_p3;
+    int16_t  dig_p4;
+    int16_t  dig_p5;
+    int16_t  dig_p6;
+    int16_t  dig_p7;
+    int16_t  dig_p8;
+    int16_t  dig_p9;
+  };
+} bmp280_cal;
+#pragma pack(pop)
+
+/*
+ * read calibration registers
+ */
+static void bmp280_getcalibration(void)
+{
+  memset(bmp280_cal.bytes, 0, sizeof(bmp280_cal));
+
+  i2c_read_reg_to_buf(BMP280_ADDR,
+    BMP280_CAL_REG_FIRST,
+    bmp280_cal.bytes,
+    BMP280_CAL_DATA_SIZE
+  );
+}
+
+void bmp280_set_ctrl(uint8_t osrs_t, uint8_t osrs_p, uint8_t mode)
+{
+  i2c_writeReg(BMP280_ADDR, BMP280_CONTROL_REG,
+    ((osrs_t & 0x7) << 5) | ((osrs_p & 0x7) << 2) | (mode & 0x3));
+}
+
+void bmp280_set_config(uint8_t t_sb, uint8_t filter, uint8_t spi3w_en)
+{
+  i2c_writeReg(BMP280_ADDR, BMP280_CONFIG_REG,
+    ((t_sb & 0x7) << 5) | ((filter & 0x7) << 2) | (spi3w_en & 1));
+}
+
+#define bmp280_24bit_reg(b1, b2, b3)  ( \
+  ((int32_t)(b1) << 16) \
+  | ((int32_t)(b2) << 8) \
+  | ((int32_t)(b3) ) \
+)
+
+/*  Measures and calculates pressure and temperature
+ *
+ *  This function updates global variables baroPressure and baroTemperature
+ *
+ *  baroTemperature unit is 0.01 deg C
+ *  baroPressure unit is Pa
+ *
+ */
+
+
+void bmp280_measure(void)
+{
+  uint8_t data[BMP280_RAWDATA_BYTES];
+  int32_t temp_raw, pres_raw;
+  int64_t var1, var2, t_fine;
+  i2c_read_reg_to_buf(BMP280_ADDR, BMP280_PRES_REG, data, BMP280_RAWDATA_BYTES);
+  pres_raw = bmp280_24bit_reg(data[0], data[1], data[2]);
+  temp_raw = bmp280_24bit_reg(data[3], data[4], data[5]);
+
+  temp_raw >>= 4;   //20 bits
+  pres_raw >>= 4;   //20 bits
+
+  var1 = ((((temp_raw >> 3) - ((int32_t)bmp280_cal.dig_t1 << 1))) *
+    ((int32_t)bmp280_cal.dig_t2)) >> 11;
+
+  var2 = (((((temp_raw >> 4) - ((int32_t)bmp280_cal.dig_t1)) *
+    ((temp_raw >> 4) - ((int32_t)bmp280_cal.dig_t1))) >> 12) *
+    ((int32_t)bmp280_cal.dig_t3)) >> 14;
+
+  t_fine = var1 + var2;
+
+  // temperature in DegC, resolution is 0.01 DegC. Output value of "5123" equals 51.23 DegC
+  baroTemperature = (t_fine * 5 + 128) >> 8;
+
+  var1 = ((int64_t)t_fine) - 128000;
+  var2 = var1 * var1 * (int64_t)bmp280_cal.dig_p6;
+  var2 = var2 + ((var1 * (int64_t)bmp280_cal.dig_p5) << 17);
+  var2 = var2 + (((int64_t)bmp280_cal.dig_p4) << 35);
+  var1 = ((var1 * var1 * (int64_t)bmp280_cal.dig_p3) >> 8) +
+    ((var1 * (int64_t)bmp280_cal.dig_p2) << 12);
+  var1 = (((((int64_t)1) << 47) + var1)) * ((int64_t)bmp280_cal.dig_p1) >> 33;
+
+  if (var1 == 0)
+  {
+    return; // avoid exception caused by division by zero
+  }
+  p = 1048576 - pres_raw;
+  p = (((p << 31) - var2) * 3125) / var1;
+  var1 = (((int64_t)bmp280_cal.dig_p9) * (p >> 13) * (p >> 13)) >> 25;
+  var2 = (((int64_t)bmp280_cal.dig_p8) * p) >> 19;
+
+  p = ((p + var1 + var2) >> 8) + (((int64_t)bmp280_cal.dig_p7) << 4);
+  baroPressure = (p + 128) >> 8; //baroPressure in Pa
+}
+
+void  Baro_init()
+{
+  bmp280_getcalibration();
+  bmp280_set_config(0, 4, 0); // 0.5 ms standby time, 16x filter, no 3-wire SPI
+  bmp280_set_ctrl(2, 5, 3); // T oversample x2, P over sample x16, normal mode
+  deadline = currentTime + 5000;
+}
+
+//return 0: no data available, no computation ;  1: new value available and computation ; 
+uint8_t Baro_update()
+{
+  if (currentTime < deadline) return 0;
+  deadline = currentTime + 3000;
+
+  Baro_Common();
+  bmp280_measure();
+
+  return 1;
 }
 #endif
 
@@ -680,9 +910,9 @@ void ACC_init () {
 void ACC_getADC () {
   i2c_getSixRawADC(MMA7455_ADDRESS,0x00);
 
-  ACC_ORIENTATION( ((int8_t(rawADC[1])<<8) | int8_t(rawADC[0])) ,
-                   ((int8_t(rawADC[3])<<8) | int8_t(rawADC[2])) ,
-                   ((int8_t(rawADC[5])<<8) | int8_t(rawADC[4])) );
+  ACC_ORIENTATION((int16_t)((rawADC[1]<<8) | int8_t(rawADC[0])) ,
+    (int16_t)((rawADC[3]<<8) | int8_t(rawADC[2])) ,
+    (int16_t)((rawADC[5]<<8) | int8_t(rawADC[4])) );
   ACC_Common();
 }
 #endif
@@ -707,9 +937,9 @@ void ACC_init () {
 void ACC_getADC () {
   i2c_getSixRawADC(MMA8451Q_ADDRESS,0x00);
 
-  ACC_ORIENTATION( ((rawADC[1]<<8) | rawADC[0])/32 ,
-                   ((rawADC[3]<<8) | rawADC[2])/32 ,
-                   ((rawADC[5]<<8) | rawADC[4])/32);
+  ACC_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0])/32 ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2])/32 ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4])/32);
   ACC_Common();
 }
 #endif
@@ -741,9 +971,9 @@ void ACC_init () {
 void ACC_getADC () {
   i2c_getSixRawADC(ADXL345_ADDRESS,0x32);
 
-  ACC_ORIENTATION( ((rawADC[1]<<8) | rawADC[0]) ,
-                   ((rawADC[3]<<8) | rawADC[2]) ,
-                   ((rawADC[5]<<8) | rawADC[4]) );
+  ACC_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0]) ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2]) ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4]) );
   ACC_Common();
 }
 #endif
@@ -796,9 +1026,9 @@ void ACC_init () {
 void ACC_getADC () {
   i2c_getSixRawADC(BMA180_ADDRESS,0x02);
   //usefull info is on the 14 bits  [2-15] bits  /4 => [0-13] bits  /4 => 12 bit resolution
-  ACC_ORIENTATION( ((rawADC[1]<<8) | rawADC[0])>>4 ,
-                   ((rawADC[3]<<8) | rawADC[2])>>4 ,
-                   ((rawADC[5]<<8) | rawADC[4])>>4 );
+  ACC_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0])>>4 ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2])>>4 ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4])>>4 );
   ACC_Common();
 }
 #endif
@@ -822,9 +1052,9 @@ void ACC_init () {
 void ACC_getADC () {
   i2c_getSixRawADC(BMA280_ADDRESS,0x02);
   //usefull info is on the 14 bits  [2-15] bits  /4 => [0-13] bits  /4 => 12 bit resolution
-  ACC_ORIENTATION( ((rawADC[1]<<8) | rawADC[0])>>4 ,
-                   ((rawADC[3]<<8) | rawADC[2])>>4 ,
-                   ((rawADC[5]<<8) | rawADC[4])>>4 );
+  ACC_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0])>>4 ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2])>>4 ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4])>>4 );
   ACC_Common();
 }
 #endif
@@ -857,9 +1087,9 @@ void ACC_init(){
 
 void ACC_getADC(){
   i2c_getSixRawADC(0x38,0x02);
-  ACC_ORIENTATION( ((rawADC[1]<<8) | rawADC[0])>>6 ,
-                   ((rawADC[3]<<8) | rawADC[2])>>6 ,
-                   ((rawADC[5]<<8) | rawADC[4])>>6 );
+  ACC_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0])>>6 ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2])>>6 ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4])>>6 );
   ACC_Common();
 }
 #endif
@@ -877,9 +1107,9 @@ void ACC_init(){
 
 void ACC_getADC(){
   i2c_getSixRawADC(LIS3A,0x28+0x80);
-  ACC_ORIENTATION( ((rawADC[1]<<8) | rawADC[0])>>2 ,
-                   ((rawADC[3]<<8) | rawADC[2])>>2 ,
-                   ((rawADC[5]<<8) | rawADC[4])>>2);
+  ACC_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0])>>2 ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2])>>2 ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4])>>2);
   ACC_Common();
 }
 #endif
@@ -898,9 +1128,9 @@ void ACC_init () {
   void ACC_getADC () {
   i2c_getSixRawADC(0x18,0xA8);
 
-  ACC_ORIENTATION( ((rawADC[1]<<8) | rawADC[0])>>4 ,
-                   ((rawADC[3]<<8) | rawADC[2])>>4 ,
-                   ((rawADC[5]<<8) | rawADC[4])>>4 );
+  ACC_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0])>>4 ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2])>>4 ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4])>>4 );
   ACC_Common();
 }
 #endif
@@ -940,9 +1170,9 @@ void Gyro_init() {
 void Gyro_getADC () {
   i2c_getSixRawADC(L3G4200D_ADDRESS,0x80|0x28);
 
-  GYRO_ORIENTATION( ((rawADC[1]<<8) | rawADC[0])>>2  ,
-                    ((rawADC[3]<<8) | rawADC[2])>>2  ,
-                    ((rawADC[5]<<8) | rawADC[4])>>2  );
+  GYRO_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0])>>2  ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2])>>2  ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4])>>2  );
   GYRO_Common();
 }
 #endif
@@ -975,9 +1205,9 @@ void Gyro_init() {
 
 void Gyro_getADC () {
   i2c_getSixRawADC(GYRO_ADDRESS,0X1D);
-  GYRO_ORIENTATION( ((rawADC[0]<<8) | rawADC[1])>>2 , // range: +/- 8192; +/- 2000 deg/sec
-                    ((rawADC[2]<<8) | rawADC[3])>>2 ,
-                    ((rawADC[4]<<8) | rawADC[5])>>2 );
+  GYRO_ORIENTATION((int16_t)((rawADC[0]<<8) | rawADC[1])>>2 , // range: +/- 8192; +/- 2000 deg/sec
+    (int16_t)((rawADC[2]<<8) | rawADC[3])>>2 ,
+    (int16_t)((rawADC[4]<<8) | rawADC[5])>>2 );
   GYRO_Common();
 }
 #endif
@@ -1084,9 +1314,9 @@ void Mag_init() {
 #if !defined(MPU6050_I2C_AUX_MASTER)
   void Device_Mag_getADC() {
     i2c_getSixRawADC(MAG_ADDRESS,MAG_DATA_REGISTER);
-    MAG_ORIENTATION( ((rawADC[0]<<8) | rawADC[1]) ,
-                     ((rawADC[2]<<8) | rawADC[3]) ,
-                     ((rawADC[4]<<8) | rawADC[5]) );
+    MAG_ORIENTATION((int16_t)((rawADC[0]<<8) | rawADC[1]) ,
+      (int16_t)((rawADC[2]<<8) | rawADC[3]) ,
+      (int16_t)((rawADC[4]<<8) | rawADC[5]) );
   }
 #endif
 #endif
@@ -1118,9 +1348,9 @@ static int32_t xyz_total[3]={0,0,0};  // 32 bit totals so they won't overflow.
 
 static void getADC() {
   i2c_getSixRawADC(MAG_ADDRESS,MAG_DATA_REGISTER);
-  MAG_ORIENTATION( ((rawADC[0]<<8) | rawADC[1]) ,
-                   ((rawADC[4]<<8) | rawADC[5]) ,
-                   ((rawADC[2]<<8) | rawADC[3]) );
+  MAG_ORIENTATION((int16_t)((rawADC[0]<<8) | rawADC[1]) ,
+    (int16_t)((rawADC[4]<<8) | rawADC[5]) ,
+    (int16_t)((rawADC[2]<<8) | rawADC[3]) );
 }
 
 static uint8_t bias_collect(uint8_t bias) {
@@ -1172,6 +1402,44 @@ static void Device_Mag_getADC() {
 #endif
 
 // ************************************************************************************************************
+// I2C Compass QMC5883L
+// ************************************************************************************************************
+// I2C adress: 0x0D (7bit)
+// ************************************************************************************************************
+#if defined(QMC5883)
+
+#define MAG_ADDRESS 0x0D
+#define MAG_DATA_REGISTER 0x00
+
+//REG CONTROL
+#define MAG_CTRL_REG1 0x09
+#define QMC_MODE 0xC1 // 11 00 00 01OSR=64(11); Range=2G(00); ODR=10Hz(00); MODE=Cont(01)
+#define MAG_CTRL_REG2 0x0A
+
+void Mag_init()
+{
+  i2c_writeReg(MAG_ADDRESS, 0x0B, 0x01);
+  i2c_writeReg(MAG_ADDRESS, MAG_CTRL_REG1, QMC_MODE);
+}
+
+
+static void getADC()
+{
+  i2c_getSixRawADC(MAG_ADDRESS, MAG_DATA_REGISTER);
+  MAG_ORIENTATION((int16_t)((rawADC[1] << 8) | rawADC[0]),
+    (int16_t)((rawADC[3] << 8) | rawADC[2]),
+    (int16_t)((rawADC[5] << 8) | rawADC[4]));
+}
+
+#if !defined(MPU6050_I2C_AUX_MASTER)
+static void Device_Mag_getADC()
+{
+  getADC();
+}
+#endif
+#endif
+
+// ************************************************************************************************************
 // I2C Compass HMC5843
 // ************************************************************************************************************
 // I2C adress: 0x3C (8bit)   0x1E (7bit)
@@ -1182,9 +1450,9 @@ static void Device_Mag_getADC() {
 
 void getADC() {
   i2c_getSixRawADC(MAG_ADDRESS,MAG_DATA_REGISTER);
-  MAG_ORIENTATION( ((rawADC[0]<<8) | rawADC[1]) ,
-                   ((rawADC[2]<<8) | rawADC[3]) ,
-                   ((rawADC[4]<<8) | rawADC[5]) );
+  MAG_ORIENTATION((int16_t)((rawADC[0]<<8) | rawADC[1]) ,
+    (int16_t)((rawADC[2]<<8) | rawADC[3]) ,
+    (int16_t)((rawADC[4]<<8) | rawADC[5]) );
 }
 
 void Mag_init() {
@@ -1237,9 +1505,9 @@ void Device_Mag_getADC() {
 
   void Device_Mag_getADC() {
     i2c_getSixRawADC(MAG_ADDRESS,MAG_DATA_REGISTER);
-    MAG_ORIENTATION( ((rawADC[1]<<8) | rawADC[0]) ,
-                     ((rawADC[3]<<8) | rawADC[2]) ,
-                     ((rawADC[5]<<8) | rawADC[4]) );
+    MAG_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0]) ,
+      (int16_t)((rawADC[3]<<8) | rawADC[2]) ,
+      (int16_t)((rawADC[5]<<8) | rawADC[4]) );
     //Start another meassurement
     i2c_writeReg(MAG_ADDRESS,0x0a,0x01);
   }
@@ -1268,9 +1536,19 @@ static void Gyro_init() {
 
 void Gyro_getADC () {
   i2c_getSixRawADC(MPU6050_ADDRESS, 0x43);
-  GYRO_ORIENTATION( ((rawADC[0]<<8) | rawADC[1])>>2 , // range: +/- 8192; +/- 2000 deg/sec
-                    ((rawADC[2]<<8) | rawADC[3])>>2 ,
-                    ((rawADC[4]<<8) | rawADC[5])>>2 );
+  //REVIEW: should not shift negative numbers, especially right!
+  GYRO_ORIENTATION( (int16_t)((rawADC[0]<<8) | rawADC[1])>>2 , // range: +/- 8192; +/- 2000 deg/sec
+    (int16_t)((rawADC[2]<<8) | rawADC[3])>>2 ,
+    (int16_t)((rawADC[4]<<8) | rawADC[5])>>2 );
+
+  //imu.gyroADC[ROLL] = 0; imu.gyroADC[PITCH] = 0; imu.gyroADC[YAW] = 0;
+
+  /*
+  Serial.print(imu.gyroADC[ROLL]); Serial.print("\t");
+  Serial.print(imu.gyroADC[PITCH]); Serial.print("\t");
+  Serial.print(imu.gyroADC[YAW]); Serial.println("\t");
+  */
+
   GYRO_Common();
 }
 
@@ -1293,9 +1571,18 @@ static void ACC_init () {
 
 void ACC_getADC () {
   i2c_getSixRawADC(MPU6050_ADDRESS, 0x3B);
-  ACC_ORIENTATION( ((rawADC[0]<<8) | rawADC[1])>>3 ,
-                   ((rawADC[2]<<8) | rawADC[3])>>3 ,
-                   ((rawADC[4]<<8) | rawADC[5])>>3 );
+  //TODO: should not shift negative numbers, especially right!
+  ACC_ORIENTATION( (int16_t)((rawADC[0]<<8) | rawADC[1])>>3 ,
+    (int16_t)((rawADC[2]<<8) | rawADC[3])>>3 ,
+    (int16_t)((rawADC[4]<<8) | rawADC[5])>>3 );
+
+
+  /*
+  Serial.print(imu.accADC[ROLL]); Serial.print("\t");
+  Serial.print(imu.accADC[PITCH]); Serial.print("\t");
+  Serial.print(imu.accADC[YAW]); Serial.println("\t");
+  */
+
   ACC_Common();
 }
 
@@ -1304,19 +1591,25 @@ void ACC_getADC () {
     static void Device_Mag_getADC() {
       i2c_getSixRawADC(MPU6050_ADDRESS, 0x49);               //0x49 is the first memory room for EXT_SENS_DATA
       #if defined(HMC5843)
-        MAG_ORIENTATION( ((rawADC[0]<<8) | rawADC[1]) ,
-                         ((rawADC[2]<<8) | rawADC[3]) ,
-                         ((rawADC[4]<<8) | rawADC[5]) );
+        MAG_ORIENTATION( (int16_t)((rawADC[0]<<8) | rawADC[1]) ,
+                          (int16_t)((rawADC[2]<<8) | rawADC[3]) ,
+                          (int16_t)((rawADC[4]<<8) | rawADC[5]) );
       #endif
       #if defined (HMC5883)
-        MAG_ORIENTATION( ((rawADC[0]<<8) | rawADC[1]) ,
-                         ((rawADC[4]<<8) | rawADC[5]) ,
-                         ((rawADC[2]<<8) | rawADC[3]) );
+        MAG_ORIENTATION((int16_t)((rawADC[0]<<8) | rawADC[1]) ,
+          (int16_t)((rawADC[4]<<8) | rawADC[5]) ,
+          (int16_t)((rawADC[2]<<8) | rawADC[3]) );
       #endif
       #if defined (MAG3110)
-        MAG_ORIENTATION( ((rawADC[0]<<8) | rawADC[1]) ,
-                         ((rawADC[2]<<8) | rawADC[3]) ,
-                         ((rawADC[4]<<8) | rawADC[5]) );
+        MAG_ORIENTATION((int16_t)((rawADC[0]<<8) | rawADC[1]) ,
+          (int16_t)((rawADC[2]<<8) | rawADC[3]) ,
+          (int16_t)((rawADC[4]<<8) | rawADC[5]) );
+      #endif
+
+      #if defined(QMC5883)
+        MAG_ORIENTATION((int16_t)((rawADC[1] << 8) | rawADC[0]),
+          (int16_t)((rawADC[3] << 8) | rawADC[2]),
+          (int16_t)((rawADC[5] << 8) | rawADC[4]));
       #endif
     }
   #endif
@@ -1365,9 +1658,9 @@ void ACC_init () {
   void ACC_getADC () {
   i2c_getSixRawADC(LSM330_ACC_ADDRESS,0x80|0x28);// Start multiple read at reg 0x28
 
-  ACC_ORIENTATION( ((rawADC[1]<<8) | rawADC[0])>>ACC_DELIMITER ,
-                   ((rawADC[3]<<8) | rawADC[2])>>ACC_DELIMITER ,
-                   ((rawADC[5]<<8) | rawADC[4])>>ACC_DELIMITER );
+  ACC_ORIENTATION((int16_t)((rawADC[1]<<8) | rawADC[0])>>ACC_DELIMITER ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2])>>ACC_DELIMITER ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4])>>ACC_DELIMITER );
   ACC_Common();
 }
 ////////////////////////////////////
@@ -1389,9 +1682,9 @@ void Gyro_init() {
 void Gyro_getADC () {
   i2c_getSixRawADC(LSM330_GYRO_ADDRESS,0x80|0x28);
 
-  GYRO_ORIENTATION( ((rawADC[1]<<8) | rawADC[0])>>2  ,
-                    ((rawADC[3]<<8) | rawADC[2])>>2  ,
-                    ((rawADC[5]<<8) | rawADC[4])>>2  );
+  GYRO_ORIENTATION( (int16_t)((rawADC[1]<<8) | rawADC[0])>>2  ,
+    (int16_t)((rawADC[3]<<8) | rawADC[2])>>2  ,
+    (int16_t)((rawADC[5]<<8) | rawADC[4])>>2  );
   GYRO_Common();
 }
 ////////////////////////////////////

@@ -1,12 +1,40 @@
+#ifndef ESP32
 #include <avr/eeprom.h>
+#else
+#include <EEPROM.h>
+#endif
+
 #include "Arduino.h"
 #include "config.h"
 #include "def.h"
 #include "types.h"
-#include "EEPROM.h"
+#include "myEEPROM.h"
 #include "MahoWii.h"
 #include "Alarms.h"
 #include "GPS.h"
+#include "Serial.h"
+
+#ifdef ESP32
+
+#define E2END 4000  //reserve 96 bytes for CABELL
+
+void eeprom_read_block(void *__dst, const void *__src, size_t __n)
+{
+  EEPROM.readBytes((int)__src, __dst, __n);
+}
+
+void eeprom_write_block(const void *__src, void *__dst, size_t __n)
+{
+  /*
+  Serial.print("EEPROM.write=");
+  Serial.print((int)__dst);
+  Serial.print(',');
+  Serial.println(__n);
+  */
+  EEPROM.writeBytes((int)__dst, __src, __n);
+  EEPROM.commit();
+}
+#endif
 
 void LoadDefaults(void);
 
@@ -36,7 +64,7 @@ bool readEEPROM() {
   #endif
   eeprom_read_block((void*)&conf, (void*)(global_conf.currentSet * sizeof(conf) + sizeof(global_conf)), sizeof(conf));
   if(calculate_sum((uint8_t*)&conf, sizeof(conf)) != conf.checksum) {
-    blinkLED(6,100,3);    
+    blinkLED(6,100,3);
     SET_ALARM_BUZZER(ALRM_FAC_CONFIRM, ALRM_LVL_CONFIRM_ELSE);
     LoadDefaults();                 // force load defaults 
     return false;                   // defaults loaded, don't reload constants (EEPROM life saving)
@@ -160,14 +188,14 @@ void LoadDefaults() {
     #ifdef MS561101BA
       conf.pid[PIDALT].P8   = 50; conf.pid[PIDALT].I8   = 20; conf.pid[PIDALT].D8   = 16;
     #else
-      conf.pid[PIDALT].P8   = 40; conf.pid[PIDALT].I8   = 15; conf.pid[PIDALT].D8   = 16;
+      conf.pid[PIDALT].P8   = 100; conf.pid[PIDALT].I8   = 10; conf.pid[PIDALT].D8   = 100;
     #endif
 
     conf.pid[PIDPOS].P8  = POSHOLD_P * 100;     conf.pid[PIDPOS].I8    = POSHOLD_I * 100;       conf.pid[PIDPOS].D8    = 0;
     conf.pid[PIDPOSR].P8 = POSHOLD_RATE_P * 10; conf.pid[PIDPOSR].I8   = POSHOLD_RATE_I * 100;  conf.pid[PIDPOSR].D8   = POSHOLD_RATE_D * 1000;
     conf.pid[PIDNAVR].P8 = NAV_P * 10;          conf.pid[PIDNAVR].I8   = NAV_I * 100;           conf.pid[PIDNAVR].D8   = NAV_D * 1000;
   
-    conf.pid[PIDMAG].P8   = 40;
+    conf.pid[PIDMAG].P8   = 100;
 
     conf.pid[PIDVEL].P8 = 0;      conf.pid[PIDVEL].I8 = 0;    conf.pid[PIDVEL].D8 = 0;
 
@@ -327,5 +355,20 @@ uint8_t getMaxWPNumber() {
   uint16_t wp_num = (last_avail-first_avail)/sizeof(mission_step);
   if (wp_num>254) wp_num = 254;
   return wp_num;
+}
+#endif
+
+#ifdef ESP32
+void EEPROM_init()
+{
+  if (!EEPROM.begin(4096))  //Max size on ESP32 is one sector (4Kb)
+  {
+    Serial.println("failed to initialise EEPROM"); delay(1000000);
+  }
+}
+
+uint16_t EEPROM_Last()
+{
+  return E2END;
 }
 #endif

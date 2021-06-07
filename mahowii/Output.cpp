@@ -41,6 +41,9 @@ void initializeServo();
 #if defined(MEGA)
   uint8_t PWM_PIN[8] = {3,5,6,2,7,8,9,10};      //for a quad+: rear,right,left,front   //+ for y6: 7:under right  8:under left
 #endif
+#if defined(ESP32)
+  uint8_t PWM_PIN[8] = { 26,32,25,33,26,32,25,33 }; //QUADX only supported on ESP32
+#endif
 
 /**************************************************************************************/
 /***************         Software PWM & Servo variables            ********************/
@@ -132,6 +135,30 @@ void initializeServo();
 
 
 #endif
+
+/**************************************************************************************/
+/**************************************************************************************/
+void initMotorsDrive()
+{
+  for (uint8_t i = 0; i < NUMBER_MOTOR; i++)
+  {
+    ledcSetup(i, 19531, 12);
+    ledcAttachPin(PWM_PIN[i], i);
+    ledcWrite(i, 0);
+  }
+}
+
+/**************************************************************************************/
+/**************************************************************************************/
+void initMotorsBeep()
+{
+  for (uint8_t i = 0; i < NUMBER_MOTOR; i++)
+  {
+    ledcSetup(i, 800, 8);
+    ledcAttachPin(PWM_PIN[i], i);
+    ledcWrite(i, 0);
+  }
+}
 
 /**************************************************************************************/
 /***************   Writes the Servos values to the needed format   ********************/
@@ -482,6 +509,62 @@ void writeMotors() { // [1000;2000] => [125;250]
       atomicPWM_PIN12_lowState  = 245-atomicPWM_PIN12_highState;
     #endif
   #endif
+  #ifdef ESP32
+    //beep with motors when all are stopped
+    static bool motorsStopped = false;
+
+    bool b = true;
+    for (uint8_t i = 0; i < NUMBER_MOTOR; i++)
+    {
+      if (motor[i] > MINCOMMAND)
+      {
+        b = false;
+        break;
+      }
+    }
+
+    if (motorsStopped)
+    {
+      uint32_t t = millis() & 4095;
+      if (
+            (t < 200) &&
+            ( !(f.GPS_FIX && (GPS_numSat >= 5)) || t < 80 || t > 100)
+            )
+      {
+        for (uint8_t i = 0; i < NUMBER_MOTOR; i++)
+        {
+          ledcWrite(i, rcOptions[BOXBEEPERON]?6:3);
+        }
+      }
+      else
+      {
+        for (uint8_t i = 0; i < NUMBER_MOTOR; i++)
+        {
+          ledcWrite(i, 0);
+        }
+      }
+
+      if (b == false)
+      {
+        motorsStopped = false;
+        initMotorsDrive();
+      }
+    }
+    else
+    {
+      for (uint8_t i = 0; i < NUMBER_MOTOR; i++)
+      {
+        ledcWrite(i, map(motor[i], MINCOMMAND, MAXTHROTTLE, 0, 4095));
+      }
+
+      if (b == true)
+      {
+        motorsStopped = true;
+        initMotorsBeep();
+      }
+    }
+
+#endif
 }
 
 /**************************************************************************************/
@@ -494,6 +577,7 @@ void writeAllMotors(int16_t mc) {   // Sends commands to all motors
   writeMotors();
 }
 
+
 /**************************************************************************************/
 /************        Initialize the PWM Timers and Registers         ******************/
 /**************************************************************************************/
@@ -501,6 +585,7 @@ void initOutput() {
   /****************            mark all PWM pins as Output             ******************/
   for(uint8_t i=0;i<NUMBER_MOTOR;i++) {
     pinMode(PWM_PIN[i],OUTPUT);
+    digitalWrite(PWM_PIN[i], 0);
   }
     
   /****************  Specific PWM Timers & Registers for the MEGA's    ******************/
@@ -668,6 +753,10 @@ void initOutput() {
         pinMode(A0,OUTPUT);pinMode(A1,OUTPUT);
       #endif
     #endif
+  #endif
+
+  #ifdef ESP32
+   initMotorsDrive();
   #endif
 
   /********  special version of MultiWii to calibrate all attached ESCs ************/
