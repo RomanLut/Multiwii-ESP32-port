@@ -238,7 +238,7 @@ void resetTimer(dtimer_t * timer);
 
 #define HZ2US(hz)   (1000000 / (hz))
 #define HZ2MS(hz)   (1000 / (hz))
-#define HZ2S(hz)    (1.0f / (hz))
+//#define HZ2S(hz)    (1.0f / (hz))
 #define US2S(us)    ((us) * 1e-6f)
 #define MS2S(ms)    ((ms) * 1e-3f)
 #define MS2US(ms)   ((ms) * 1000)

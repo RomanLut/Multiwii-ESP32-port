@@ -5,7 +5,7 @@
 #include "MahoWii.h"
 #include "IMU.h"
 #include "Sensors.h"
-#include "Math.h"
+#include "myMath.h"
 
 #pragma pack(push, 1)
 

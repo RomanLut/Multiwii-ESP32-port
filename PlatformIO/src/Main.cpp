@@ -10,7 +10,7 @@ March  2015     V2.4
 
 #ifdef ESP32
 //#include <WiFi.h>
-#include <SPI.h>  //required for CABELL to compile
+//#include <SPI.h>  //required for CABELL to compile
 #endif
 
 #ifndef ESP32
@@ -22,7 +22,7 @@ March  2015     V2.4
 #include "def.h"
 #include "types.h"
 #include "MahoWii.h"
-#include "Math.h"
+#include "myMath.h"
 #include "Alarms.h"
 #include "myEEPROM.h"
 #include "IMU.h"
@@ -37,7 +37,7 @@ March  2015     V2.4
 #include "Telemetry.h"
 #include "AltHold.h"
 #ifdef CABELL
-#include <Cabell_rx.h>
+//#include <Cabell_rx.h>
 #endif
 #include "mywifi.h"
 #include "ps3rx.h"

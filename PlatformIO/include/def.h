@@ -1675,7 +1675,7 @@
   #define STABLEPIN_OFF digitalWrite(STABLEPIN,LOW)
 
  */
-#define LED_BUILTIN 2
+//#define LED_BUILTIN 2
 #define LEDPIN_PINMODE pinMode (LED_BUILTIN, OUTPUT)
 #define LEDPIN_TOGGLE digitalWrite(LED_BUILTIN,!digitalRead(LED_BUILTIN))
 #define LEDPIN_OFF digitalWrite(LED_BUILTIN,LOW)

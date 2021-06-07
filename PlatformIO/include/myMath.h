@@ -10,6 +10,7 @@
 #define RADX10  0.001745329252f      // M_PI/1800.0f   = 0.001745329252f
 #define RADX100 0.000174532925f      // M_PI/18000.0f  = 0.0001745329252f 
 
+/*
 #ifndef cosf(x)
   #define cosf(x) cos(x)
 #endif
@@ -17,6 +18,7 @@
 #ifndef sinf(x)
   #define sinf(x) sin(x)
 #endif
+*/
 
 float sin_approx(int16_t angle);
 float cos_approx(int16_t angle);

@@ -1,4 +1,4 @@
-#include "Arduino.h"
+#include <Arduino.h>
 #include "config.h"
 #include "def.h"
 #include "types.h"
@@ -8,7 +8,7 @@
 #include "MahoWii.h"
 #include "myEEPROM.h"
 #include "AltHold.h"
-#include "Math.h"
+#include "myMath.h"
 #include <math.h>
 
 #if GPS

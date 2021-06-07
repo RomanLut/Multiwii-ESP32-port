@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "Math.h"
+#include "myMath.h"
 
 /**************************************************************************************************/
 /***************  Math Section - Useful trigonometric approximation functions  ********************/

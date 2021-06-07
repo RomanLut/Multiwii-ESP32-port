@@ -4,7 +4,7 @@
 #include "types.h"
 #include "Sensors.h"
 #include "MahoWii.h"
-#include "Math.h"
+#include "myMath.h"
 #include "INS.h"
 #include "GPS.h"
 #include "AltHold.h"
