@@ -45,6 +45,8 @@ March  2015     V2.4
 #include <ESP8266FtpServer.h>  //http://nailbuster.com/nailcode/ESP8266FtpServer.zip
 #include "blackbox.h"
 
+#include "hxrc.h"
+
 
 #ifndef ESP32
 #include <avr/pgmspace.h>
@@ -917,6 +919,8 @@ void setup() {
 
   SPIFFS.begin(true); //true -> format if mount failed
 
+  HXRCInit();
+
   Wifi_setup();
 
   ftpSrv.begin("quad", "12345678");
@@ -1071,6 +1075,8 @@ void loop () {
     spekFrameDone = 0x00;
     rcTime = currentTime + 20000;
 #else
+
+  HXRCLoop();
 
   static dtimer_t rcTimer;
   if (updateTimer(&rcTimer, HZ2US(50))) {		// 50hz rc loop

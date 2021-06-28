@@ -474,7 +474,7 @@ uint16_t readRawRC(uint8_t chan) {
     }
 #endif
   }
-  else data = 1500;
+  else data = 1000;
 
 
   /*

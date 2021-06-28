@@ -23,6 +23,79 @@ TODO: connection diagram
 ![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad2.jpg "Photo 2")
 
 
+
+Recommended AUX settings
+
+========================
+AUX1 Mid (Arm, Acro)(Mode 0)
+ Arm
+
+AUX2 Mid (Angle)(Mode 1):
+ Angle
+
+AUX2 High (Alt Hold)(Mode 2):
+ Angle
+ Alt Hold
+
+AUX2 Mid (3D Cruise)(Mode 3):
+ Angle
+ Alt Hold
+ Mag
+ GPS Hold
+
+AUX3 High (Home)(Mode 4):
+ Angle
+ Alt Hold
+ Mag
+ GPS Home
+
+AUX4 Mid (Mission)(Mode 5):
+ Angle
+ Alt Hold
+ Mag
+ Mission
+
+AUX4 High (Land)(Mode 6):
+ Angle
+ Land
+
+
+P3 Controler agginments
+===========
+Arm/Disarm - Start. Arm with Throttle down!
+Acro(Mode 0) - PS3 Left Thumb
+Angle(Mode 1) - PS3 Square 
+Alt Hold(Mode 2) - PS3 Triangle 
+3D Cruise(Mode3) - PS3 Circle
+Home(Mode4) - PS3 Cross 
+Mission(Mode 5) - PS3 Select
+Land(Mode 6)- PS3 Right thumb 
+
+PS3 D-pad is used for ACC trim.
+
+Jumper T-Lite setup
+===================
+AUX1: SWC 50% offset -50
+ + TEu 5% 
+ + TEd 10%
+ + TAl 15%
+ + TAr 20%
+AUX2: SWA
+AUX3: SWB
+AUX4: SWD 50% - 50%
+
+Disable trims in FlightMode 0.
+
+
+SWC - Arm
+SWA - Acro / Angle / AltHold
+SWB - None /3DCruise / Home
+SWD - Mission
+Right stick trims are used to trim ACC in flight.
+
+
+
+
 Original readme below:
 
 
