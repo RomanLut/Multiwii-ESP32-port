@@ -21,7 +21,7 @@ const char* serverIndex = "<form method='POST' action='/update' enctype='multipa
 
 void Wifi_setup(void)
 {
-  WiFi.mode(WIFI_AP);
+  //WiFi.mode(WIFI_AP);
 
   WiFi.softAP(ssid, password, WIFI_CHANNEL);
 /*

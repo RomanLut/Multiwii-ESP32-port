@@ -555,6 +555,7 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
 #if defined(CABELL)
       analog.rssi = CABELL_rssi1023();
 #endif
+  analog.rssi = HXRCRSSI();
 
    break;
   }
@@ -925,7 +926,7 @@ void setup() {
 
   ftpSrv.begin("quad", "12345678");
 
-  //blackboxInit();
+  blackboxInit();
 }
 
 void go_arm() {
@@ -1035,6 +1036,7 @@ void loop2(void * pvParameters)  //core 2
 
 // ******** Main Loop *********
 void loop () {
+  unsigned long startT = millis();
   static uint8_t rcDelayCommand; // this indicates the number of time (multiple of RC measurement at 50Hz) the sticks must be maintained to run or switch off motors
   static uint8_t rcSticks;       // this hold sticks position for command combos
   uint8_t axis,i;
@@ -1805,6 +1807,15 @@ void loop () {
   if ( (f.ARMED) || ((!calibratingG) && (!calibratingA)) ) writeServos();
 #endif
   writeMotors();
+
+  unsigned long dt = millis() - startT;
+
+  if ( dt > 50 ) 
+  {
+    Serial.println("Stall:");
+    Serial.println(dt);
+  }
+
 }
 
 
