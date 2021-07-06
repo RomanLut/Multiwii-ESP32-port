@@ -45,6 +45,8 @@ March  2015     V2.4
 #include <ESP8266FtpServer.h>  //http://nailbuster.com/nailcode/ESP8266FtpServer.zip
 #include "blackbox.h"
 
+#include "hxrc.h"
+
 
 #ifndef ESP32
 #include <avr/pgmspace.h>
@@ -553,6 +555,7 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
 #if defined(CABELL)
       analog.rssi = CABELL_rssi1023();
 #endif
+  analog.rssi = HXRCRSSI();
 
    break;
   }
@@ -917,11 +920,13 @@ void setup() {
 
   SPIFFS.begin(true); //true -> format if mount failed
 
+  HXRCInit();
+
   Wifi_setup();
 
   ftpSrv.begin("quad", "12345678");
 
-  //blackboxInit();
+  blackboxInit();
 }
 
 void go_arm() {
@@ -1031,6 +1036,7 @@ void loop2(void * pvParameters)  //core 2
 
 // ******** Main Loop *********
 void loop () {
+  unsigned long startT = millis();
   static uint8_t rcDelayCommand; // this indicates the number of time (multiple of RC measurement at 50Hz) the sticks must be maintained to run or switch off motors
   static uint8_t rcSticks;       // this hold sticks position for command combos
   uint8_t axis,i;
@@ -1071,6 +1077,8 @@ void loop () {
     spekFrameDone = 0x00;
     rcTime = currentTime + 20000;
 #else
+
+  HXRCLoop();
 
   static dtimer_t rcTimer;
   if (updateTimer(&rcTimer, HZ2US(50))) {		// 50hz rc loop
@@ -1799,6 +1807,15 @@ void loop () {
   if ( (f.ARMED) || ((!calibratingG) && (!calibratingA)) ) writeServos();
 #endif
   writeMotors();
+
+  unsigned long dt = millis() - startT;
+
+  if ( dt > 50 ) 
+  {
+    Serial.println("Stall:");
+    Serial.println(dt);
+  }
+
 }
 
 

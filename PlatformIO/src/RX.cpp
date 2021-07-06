@@ -11,6 +11,7 @@
 #endif
 #include "myEEPROM.h"
 #include "ps3rx.h"
+#include "hxrc.h"
 
 
 /**************************************************************************************/
@@ -472,9 +473,14 @@ uint16_t readRawRC(uint8_t chan) {
       data = ps3rx_readRawRC(chan);
       if (data != 0) failsafeCnt = 0;
     }
+    if (data == 0)
+    {
+      data = HXRCReadRawRC(chan);
+      if (data != 0) failsafeCnt = 0;
+    }
 #endif
   }
-  else data = 1500;
+  else data = 1000;
 
 
   /*

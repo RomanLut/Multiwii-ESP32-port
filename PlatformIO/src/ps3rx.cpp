@@ -24,7 +24,7 @@ static uint32_t lastCheck = micros();
 static uint32_t reinitTime = micros()+1000000;
 static uint32_t debounceTime = 0;
 static bool armed = false;
-static uint8_t mode = 0;
+static uint8_t mode = 1;
 
 static bool startPressed = false;
 static bool upPressed = false;
@@ -32,10 +32,14 @@ static bool downPressed = false;
 static bool leftPressed = false;
 static bool rightPressed = false;
 
+static bool selectPressed = false;
 static bool trianglePressed = false;
 static bool squarePressed = false;
 static bool crossPressed = false;
 static bool circlePressed = false;
+
+static bool l1Pressed = false;
+static bool r1Pressed = false;
 
 static bool reinitOnce = false;
 
@@ -72,10 +76,10 @@ static void updateLeds()
 
 static void updateAux()
 {
-  aux[0] = (mode == 0) && armed ? 2000 : 1000;
-  aux[1] = (mode == 1) && armed ? 2000 : 1000;
-  aux[2] = (mode == 2) && armed ? 2000 : 1000;
-  aux[3] = (mode == 3) && armed ? 2000 : 1000;
+  aux[0] = armed ? 1500 : 1000;
+  aux[1] = (mode == 1) && armed ? 1500 : (mode == 2 ) && armed ? 2000 : 1000;
+  aux[2] = (mode == 3) && armed ? 1500 : (mode == 4 ) && armed ? 2000 : 1000;
+  aux[3] = (mode == 5) && armed ? 1500 : (mode == 6 ) && armed ? 2000 : 1000;
 }
 
 
@@ -198,11 +202,12 @@ uint16_t ps3rx_readRawRC(uint8_t chan)
     if (pressed(Ps3.data.button.start, &startPressed))
     {
       armed = !armed;
+      if ( armed ) mode = 1;
       updateAux();
       updateLeds();
     }
 
-    if (pressed(Ps3.data.button.triangle, &trianglePressed))
+    if (pressed(Ps3.data.button.l1, &l1Pressed)) //left thumb
     {
       mode = 0;
       updateAux();
@@ -216,7 +221,7 @@ uint16_t ps3rx_readRawRC(uint8_t chan)
       updateLeds();
     }
 
-    if (pressed(Ps3.data.button.cross, &crossPressed))
+    if (pressed(Ps3.data.button.triangle, &trianglePressed))
     {
       mode = 2;
       updateAux();
@@ -226,6 +231,27 @@ uint16_t ps3rx_readRawRC(uint8_t chan)
     if (pressed(Ps3.data.button.circle, &circlePressed))
     {
       mode = 3;
+      updateAux();
+      updateLeds();
+    }
+
+    if (pressed(Ps3.data.button.cross, &crossPressed))
+    {
+      mode = 4;
+      updateAux();
+      updateLeds();
+    }
+
+    if (pressed(Ps3.data.button.select, &selectPressed))
+    {
+      mode = 5;
+      updateAux();
+      updateLeds();
+    }
+
+    if (pressed(Ps3.data.button.r1, &r1Pressed))
+    {
+      mode = 6;
       updateAux();
       updateLeds();
     }

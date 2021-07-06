@@ -3,6 +3,7 @@
 #include "def.h"
 #include "Serial.h"
 #include "MahoWii.h"
+#include "hxrc.h"
 
 #ifndef ESP32
 static volatile uint8_t serialHeadRX[UART_NUMBER],serialTailRX[UART_NUMBER];
@@ -18,10 +19,10 @@ static uint8_t serialBufferTX[TX_BUFFER_SIZE][UART_NUMBER];
 
   //BluetoothSerial library does not have availableForWrite() method.
   //In order to emulate it, we will simulate 50% of 115200 baud rate ( 115200 bytes per second ) flow
-  //micros() when some bytes has been written to BT
   #define SERIAL_BT_QUEUE_SIZE 128
   #define SERIAL_BT_BAUD 115200
   #define SERIAL_BT_MICROS_PER_BYTE (2 * 1000000 / (SERIAL_BT_BAUD / 10))
+  //micros() when last byte been written to BT
   static uint32_t bt_lastCheck;
   static uint32_t bt_bytesInFlight;
   #endif
@@ -160,6 +161,7 @@ bool SerialTXfree(uint8_t port)
   switch (port)
   {
     case 0: return serialBufferTXSize[0] == Serial.availableForWrite();
+    case 1: return HXRCSerialTxFree();
     case 2: return serialBufferTXSize[2] == Serial2.availableForWrite();
     #ifdef ESP32_BLUETOOTH_MSP
     case 3: return serialBufferTXSize[3] == SerialBTAvailableForWrite();
@@ -282,6 +284,7 @@ uint8_t SerialRead(uint8_t port) {
   switch (port)
   {
     case 0: return Serial.read();
+    case 1: return HXRCSerialRead();
     case 2: return Serial2.read();
     #ifdef ESP32_BLUETOOTH_MSP
     case 3: return SerialBT.read();
@@ -319,6 +322,7 @@ uint8_t SerialRead(uint8_t port) {
   switch (port)
   {
     case 0: return min(255u,(unsigned int)Serial.available());
+    case 1: return min(255u,(unsigned int)HXRCSerialAvailable());
     case 2: return min(255u, (unsigned int)Serial2.available());
     #ifdef ESP32_BLUETOOTH_MSP
     case 3: return min(255u,(unsigned int)SerialBT.available());
@@ -352,6 +356,7 @@ uint16_t SerialAvailableForWrite(uint8_t port)
     switch (port)
     {
     case 0: return Serial.availableForWrite();
+    case 1: return HXRCSerialAvailableForWrite();
     case 2: return Serial2.availableForWrite();
     #ifdef ESP32_BLUETOOTH_MSP
     case 3: return SerialBTAvailableForWrite();
@@ -368,6 +373,7 @@ void SerialSerialize(uint8_t port,uint8_t a) {
   switch (port)
   {
     case 0: Serial.write(a); break;
+    case 1: HXRCSerialWrite(a); break;
     case 2: Serial2.write(a); break;
     #ifdef ESP32_BLUETOOTH_MSP
     case 3: SerialBT.write(a); break;
@@ -378,7 +384,7 @@ void SerialSerialize(uint8_t port,uint8_t a) {
   if (++t >= TX_BUFFER_SIZE) t = 0;
   serialBufferTX[t][port] = a;
   serialHeadTX[port] = t;
-#endif;
+#endif
 }
 
 void SerialWrite(uint8_t port,uint8_t c){

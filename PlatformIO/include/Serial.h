@@ -7,7 +7,7 @@
   #define UART_NUMBER 2
 #elif defined(ESP32)
   #ifdef ESP32_BLUETOOTH_MSP
-    #define UART_NUMBER 4    //Serial, Serial1(reserved), Serial2, SerialBT
+    #define UART_NUMBER 4    //Serial, HXRC telemetry, Serial2, SerialBT. Serial1 is not used.
   #else
     #define UART_NUMBER 3
 #endif

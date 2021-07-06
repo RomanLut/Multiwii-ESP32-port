@@ -8,6 +8,10 @@
 #include <ESPmDNS.h>
 #include <Update.h>
 
+#include "mywifi.h"
+
+#include <esp_wifi.h>
+
 const char* host = "quad";
 const char* ssid = "quad";
 const char* password = "12345678";
@@ -17,7 +21,9 @@ const char* serverIndex = "<form method='POST' action='/update' enctype='multipa
 
 void Wifi_setup(void)
 {
-  WiFi.softAP(ssid, password);
+  //WiFi.mode(WIFI_AP);
+
+  WiFi.softAP(ssid, password, WIFI_CHANNEL);
 /*
   WiFi.mode(WIFI_AP_STA);
   WiFi.begin(ssid, password);
