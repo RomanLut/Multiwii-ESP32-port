@@ -96,27 +96,16 @@
   Serial4 - TODO: TCP Socket for EZ-gui
 
 
-  Cabell protocol telemetry:
-    RSSI - receiver RSSI
-    A1 - battery voltage
-    A2 - satelites count
-
-  Power board:
    - remove 01d resistor to lower cutoff voltage
    - connect EN to VIN
    - change 91kOhm to 147kOhm ( 91+56) to change output from 3.3 to 5
 
 
   TODO:
-  - VBat sensor
-
   - OTA updates?
   - FRSky telemetry?
-  - Drive using WIFI page ? -> ESPNow external module or modified Cabell in DIY multimodule?
-  - ESP Now?
   - ESP32CAM->Wifi RX receiver?
   - DAC - voiceover?  (DAC 25 26)
-
 
 
   PS3 contorller:
