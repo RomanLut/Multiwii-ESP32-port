@@ -44,7 +44,7 @@ public:
     
     uint16_t getAvailableForWrite() 
     {
-        if ( Size == this->outCount ) flushOut();
+        if ( Size ==  this->outCount ) flushOut();
         return Size - this->outCount;
     }
 

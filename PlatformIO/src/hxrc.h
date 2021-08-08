@@ -15,3 +15,7 @@ extern void HXRCSerialWrite(uint8_t c);
 extern bool HXRCSerialTxFree();
 
 extern int HXRCRSSI();
+
+//Voltage * 10
+extern void HXRCSetVoltage(uint8_t value);
+extern void HXRCSetNumSat(uint8_t value);

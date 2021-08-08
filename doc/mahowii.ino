@@ -39,9 +39,9 @@
   ARM LEDS:
   4 - LF Blue   120 ohm
   12 - RF Blue   120 ohm
-  14 - RB Red    68ohm
-  15 - LB Red    68ohm
-  13 - LB RB Green 
+  14 - RB Red    68 ohm
+  15 - LB Red    68 ohm
+  13 - LB RB Green   100 ohm
 
   Indication:
    Front arms no lights - no RC signal

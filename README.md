@@ -37,7 +37,7 @@ AUX2 High (Alt Hold)(Mode 2):
  Angle
  Alt Hold
 
-AUX2 Mid (3D Cruise)(Mode 3):
+AUX3 Mid (3D Cruise)(Mode 3):
  Angle
  Alt Hold
  Mag
@@ -60,7 +60,7 @@ AUX4 High (Land)(Mode 6):
  Land
 
 
-P3 Controler agginments
+PS3 Controler assignments
 ===========
 Arm/Disarm - Start. Arm with Throttle down!
 Acro(Mode 0) - PS3 Left Thumb
@@ -82,7 +82,7 @@ AUX1: SWC 50% offset -50
  + TAr 20%
 AUX2: SWA
 AUX3: SWB
-AUX4: SWD 50% - 50%
+AUX4: SWD 50% offset -50%
 
 Disable trims in FlightMode 0.
 

@@ -28,6 +28,8 @@ protected:
     //last received sequenceId
     uint16_t receivedSequenceId;
 
+    uint32_t A1,A2;
+
     //waiting for ack?
     bool waitAck;
 
@@ -40,8 +42,6 @@ protected:
 
     HXRCRingBuffer<HXRC_TELEMETRY_BUFFER_SIZE> incomingTelemetryBuffer;
     HXRCRingBuffer<HXRC_TELEMETRY_BUFFER_SIZE> outgoingTelemetryBuffer;
-
-    void updateLed();
 
 public:
 
@@ -64,5 +64,7 @@ public:
 
     HXRCTransmitterStats& getTransmitterStats();
     HXRCReceiverStats& getReceiverStats();
+
+    void updateLed(int8_t ledPin, bool ledPinInverted);
 };
 

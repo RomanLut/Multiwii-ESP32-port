@@ -74,3 +74,13 @@ int HXRCRSSI()
 {
     return ((uint32_t)hxrcSlave.getReceiverStats().getRSSI()) * 1023 / 100;
 }
+
+void HXRCSetVoltage(uint8_t value)
+{
+    hxrcSlave.setA1( value );//transfer voltage*10 value directly. set ratio to "-" in opentx, scale will be 0.1. otherwise scale would be ratio/255.
+}
+
+extern void HXRCSetNumSat(uint8_t value)
+{
+    hxrcSlave.setA2( value*10 );//transfer numsats as numsats*10. set ratio to "-" in opentx. set accuracy to 0.
+}

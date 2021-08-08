@@ -1068,6 +1068,9 @@ void loop () {
     CABELL_setTelemetryValue(1, GPS_numSat);
   #endif
 
+    HXRCSetVoltage(analog.vbat);
+    HXRCSetNumSat(GPS_numSat);
+
     //remoteXY_setTelemetryValue(0, analog.vbat);
     //remoteXY_setTelemetryValue(1, GPS_numSat);
 
