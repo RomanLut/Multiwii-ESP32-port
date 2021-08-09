@@ -1131,8 +1131,8 @@ void loop () {
         errorGyroI_YAW = 0;
         errorAngleI[ROLL] = 0; errorAngleI[PITCH] = 0;
       #endif
-      if (conf.activate[BOXARM] > 0) {             // Arming/Disarming via ARM BOX
-        if ( rcOptions[BOXARM] && f.OK_TO_ARM ) go_arm(); else if (f.ARMED) go_disarm();
+      if (conf.activate[BOXARM] > 0) {             // Arming via ARM BOX - only with throttle down
+        if ( rcOptions[BOXARM] && f.OK_TO_ARM ) go_arm(); 
       }
       #ifdef DISABLE_YAW_ON_MIN_THROTTLE_DURING_AH
         if (f.BARO_MODE && (conf.activate[BOXARM] == 0)) {
@@ -1140,6 +1140,12 @@ void loop () {
         }
       #endif
     }
+
+    if (conf.activate[BOXARM] > 0) {             // Disarming via ARM BOX - with any throttle value
+      if ( !rcOptions[BOXARM] && f.ARMED ) go_disarm();
+    }
+
+
     if(rcDelayCommand == 20) {
       if(f.ARMED) {                   // actions during armed
         #ifdef ALLOW_ARM_DISARM_VIA_TX_YAW
