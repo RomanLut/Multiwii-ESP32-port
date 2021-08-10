@@ -179,7 +179,7 @@ typedef struct {
 typedef struct {
   uint8_t currentSet;
   int16_t accZero[3];
-  uint16_t accScale[3];   // sensitivity correction (1000 for acc_1G)
+  uint16_t accScale[3];   // sensitivity correction (1024 for acc_1G)
   int16_t magZero[3];
   uint16_t flashsum;
   uint8_t checksum;      // MUST BE ON LAST POSITION OF STRUCTURE !

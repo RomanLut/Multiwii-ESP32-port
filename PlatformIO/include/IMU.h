@@ -3,4 +3,7 @@
 
 void computeIMU();
 
+bool hasImpact();
+void resetMaxG();
+
 #endif /* IMU_H_ */

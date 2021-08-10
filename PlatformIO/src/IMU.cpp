@@ -11,6 +11,8 @@
 
 void calculateAttitude();
 
+float maxG = 0;
+
 void computeIMU () {
   uint8_t axis;
   static int16_t gyroADCprevious[3] = {0,0,0};
@@ -217,6 +219,17 @@ void calculateAttitude(){
     deltaGyroAngle16[axis] = imu.gyroADC[axis]  * scale;
   }
 
+
+
+  float curG = sqrt(LPFAcc[0]*LPFAcc[0] + LPFAcc[1]*LPFAcc[0] + LPFAcc[2]*LPFAcc[2] ) - ACC_1G;
+  if ( curG > maxG )
+  {
+    maxG = curG;
+    //Serial.print( "MaxG=");
+    //Serial.println( maxG);
+  }
+
+
   // we rotate the intermediate 32 bit vector with the radian vector (deltaGyroAngle16), scaled by 2^16
   // however, only the first 16 MSB of the 32 bit vector is used to compute the result
   // it is ok to use this approximation as the 16 LSB are used only for the complementary filter part
@@ -298,6 +311,17 @@ void calculateAttitude(){
   #endif
 
 }
+
+bool hasImpact()
+{
+  return maxG > ACC_1G * 0.5f;
+}
+
+void resetMaxG()
+{
+  maxG = 0;
+}
+
 
 #pragma pack(pop)
 

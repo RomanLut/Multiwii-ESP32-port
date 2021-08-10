@@ -733,7 +733,7 @@ void setup() {
   SerialOpen(0,SERIAL0_COM_SPEED);
 
 
-  Serial.print("init1");
+  Serial.println("init1");
 
 #ifdef PS3RX
   //call before SerialBluetooth (SerialOpen(3) )
@@ -775,10 +775,10 @@ void setup() {
   DEBUGPIN_PINMODE;
 
   //initOutput();
-  Serial.print("init1");
+  Serial.println("init1");
 
   readGlobalSet();
-  Serial.print("init2");
+  Serial.println("init2");
 
 #ifndef NO_FLASH_CHECK
     #if defined(MEGA)
@@ -800,7 +800,7 @@ void setup() {
     global_conf.currentSet=0;
   #endif
 
-    Serial.print("init3");
+    Serial.println("init3");
     while(1) {                                                    // check settings integrity
   #ifndef NO_FLASH_CHECK
     if(readEEPROM()) {                                          // check current setting integrity
@@ -813,7 +813,7 @@ void setup() {
     global_conf.currentSet--;                                   // next setting for check
   }
 
-    Serial.print("init4");
+    Serial.println("init4");
 
   readGlobalSet();                              // reload global settings for get last profile number
   #ifndef NO_FLASH_CHECK
@@ -823,18 +823,18 @@ void setup() {
     }
   #endif
 
-    Serial.print("init5");
+    Serial.println("init5");
 
   readEEPROM();                                 // load setting data from last used profile
   blinkLED(2,40,global_conf.currentSet+1);
 
-  Serial.print("init6");
+  Serial.println("init6");
 
   #if GPS
     recallGPSconf();                              //Load GPS configuration parameteres
   #endif
 
-    Serial.print("init7");
+    Serial.println("init7");
 
   configureReceiver();
   #if defined (PILOTLAMP)
@@ -844,7 +844,7 @@ void setup() {
     initOpenLRS();
   #endif
   initSensors();
-  Serial.print("init8");
+  Serial.println("init8");
 
   #if GPS
     GPS_set_pids();
@@ -918,15 +918,28 @@ void setup() {
   #endif
 
 
+  Serial.println("init9");
+
   SPIFFS.begin(true); //true -> format if mount failed
+
+  Serial.println("init10");
 
   HXRCInit();
 
+  Serial.println("init11");
+
   Wifi_setup();
+
+  Serial.println("init12");
 
   ftpSrv.begin("quad", "12345678");
 
+  Serial.println("init13");
+
   blackboxInit();
+
+  Serial.println("init14");
+
 }
 
 void go_arm() {
@@ -1145,6 +1158,14 @@ void loop () {
       if ( !rcOptions[BOXARM] && f.ARMED ) go_disarm();
     }
 
+    if ( hasImpact() ) {
+      if ( f.ARMED ) {
+        Serial.println("Impact!!!");
+        go_disarm();
+        f.OK_TO_ARM = 0;
+      }
+    }
+
 
     if(rcDelayCommand == 20) {
       if(f.ARMED) {                   // actions during armed
@@ -1317,7 +1338,10 @@ void loop () {
       }
     #endif
 
-    if (rcOptions[BOXARM] == 0) f.OK_TO_ARM = 1;
+    if (rcOptions[BOXARM] == 0) {
+      f.OK_TO_ARM = 1;
+      resetMaxG();
+    }
     #if !defined(GPS_LED_INDICATOR)
       if (f.ANGLE_MODE || f.HORIZON_MODE) {STABLEPIN_ON;} else {STABLEPIN_OFF;}
     #endif
