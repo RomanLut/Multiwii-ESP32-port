@@ -190,19 +190,34 @@ void serialCom() {
   static uint32_t GPS_last_frame_seen; //Last gps frame seen at this time, used to detect stalled gps communication
   uint32_t timeMax; // limit max time in this function in case of GPS  
 
-  timeMax = micros();
-  for (port = 0; port < UART_NUMBER; port++) {
+bool b= false;
+  timeMax = micros();  
+  //skip port 0. We use it for debug console only. Otherwise debug output could block all communication due to filled out buffer
+  for (port = 1; port < UART_NUMBER; port++) {
+  //for (port = 1; port < 2; port++) {
     CURRENTPORT=port;
     #define RX_COND
     #if defined(SERIAL_RX) && (UART_NUMBER > 1)
       #define RX_COND && (RX_SERIAL_PORT != port)
     #endif
     cc = SerialAvailable(port);
+/*
+  if (cc) 
+  {
+    Serial.print("===>");
+    Serial.println(cc);
+  }
+*/
 
     while (cc-- RX_COND) {
+      b=true;
       //bytesTXBuff = SerialUsedTXBuff(port); // indicates the number of occupied bytes in TX buffer
       //if (bytesTXBuff > TX_BUFFER_SIZE - 50 ) return; // ensure there is enough free TX buffer to go further (50 bytes margin)
-      if (SerialAvailableForWrite(port) < 50) return; // ensure there is enough free TX buffer to go further (50 bytes margin)
+      if (SerialAvailableForWrite(port) < 50) 
+      {
+        //Serial.println("A");
+        return; // ensure there is enough free TX buffer to go further (50 bytes margin)
+      }
       c = SerialRead(port);
       #ifdef SUPPRESS_ALL_SERIAL_MSP
         evaluateOtherData(c); // no MSP handling, so go directly
@@ -211,13 +226,18 @@ void serialCom() {
         // regular data handling to detect and handle MSP and other data
         if (state == IDLE) {
           if (c=='$') state = HEADER_START;
-          else evaluateOtherData(c); // evaluate all other incoming serial data
+          else 
+          {
+            //Serial.print("*");
+            evaluateOtherData(c); // evaluate all other incoming serial data
+          }
         } else if (state == HEADER_START) {
           state = (c=='M') ? HEADER_M : IDLE;
         } else if (state == HEADER_M) {
           state = (c=='<') ? HEADER_ARROW : IDLE;
         } else if (state == HEADER_ARROW) {
           if (c > INBUF_SIZE) {  // now we are expecting the payload size
+            //Serial.print("B");
             state = IDLE;
             continue;
           }
@@ -236,9 +256,16 @@ void serialCom() {
             inBuf[offset[port]++][port] = c;
           } else {
             if (checksum[port] == c) // compare calculated and transferred checksum
+            {
               evaluateCommand(cmdMSP[port]); // we got a valid packet, evaluate it
+              //Serial.print("C");
+            }
+            else
+            {
+              //Serial.print("I");
+            }
             state = IDLE;
-            cc = 0; // no more than one MSP per port and per cycle
+            //cc = 0; // no more than one MSP per port and per cycle
           }
         }
         c_state[port] = state;
@@ -269,6 +296,7 @@ void serialCom() {
           }*/
         }
         if ((micros() - timeMax) > 250) {
+          //Serial.println("t");
         	return;  // Limit the maximum execution time of serial decoding to avoid time spike
         }
         #endif
@@ -286,6 +314,9 @@ void serialCom() {
 			}
 		}
 #endif
+
+//if (b) Serial.println("_");
+
 
   } // for
 }

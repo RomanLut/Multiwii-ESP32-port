@@ -90,7 +90,7 @@
 
   Serial ports:
   Serial0 - USB serial
-  Serial1 - Reserved, can be used if there are free pins
+  Serial1 - Harware is unused. UART1 is emuated by HX_ESPNOW_RC as telemetry port.
   Serial2 - GPS
   Serial3 - Bluetooth
   Serial4 - TODO: TCP Socket for EZ-gui

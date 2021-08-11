@@ -187,7 +187,7 @@ public:
             vRingbufferReturnItem( this->buffferHandle, ptr );
             toPtr += returnedSize;
             total += returnedSize;
-            return returnedSize;
+            maxLen -= returnedSize;
         }
         return total;
     }
