@@ -336,6 +336,7 @@ void evaluateCommand(uint8_t c) {
     case MSP_SET_PID:
       mspAck();
       s_struct_w((uint8_t*)&conf.pid[0].P8,3*PIDITEMS);
+      GPS_set_pids();
       break;
     case MSP_SET_BOX:
       mspAck();
