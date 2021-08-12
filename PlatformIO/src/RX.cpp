@@ -515,7 +515,7 @@ void computeRC() {
     for (chan = 0; chan < RC_CHANS; chan++) {
       rcDataTmp = readRawRC(chan);
       #if defined(FAILSAFE)
-        failsafeGoodCondition = rcDataTmp>FAILSAFE_DETECT_TRESHOLD || chan > 3 || !f.ARMED; // update controls channel only if pulse is above FAILSAFE_DETECT_TRESHOLD
+        failsafeGoodCondition = rcDataTmp>FAILSAFE_DETECT_TRESHOLD /*|| chan > 3*/ || !f.ARMED; // update controls channel only if pulse is above FAILSAFE_DETECT_TRESHOLD
       #endif                                                                                // In disarmed state allow always update for easer configuration.
       #if defined(SPEKTRUM) || defined(SBUS) || defined(SUMD) || defined(CABELL) || defined(PS3RX)// no averaging for Spektrum & SBUS & SUMD signal
         if(failsafeGoodCondition)  rcData[chan] = rcDataTmp;
