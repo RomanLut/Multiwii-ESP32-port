@@ -57,7 +57,7 @@ Resources:
 4: PL RED
 */
 
-void setBatAlarmState ( uint8_t state) 
+void setBatAlarmState( uint8_t state) 
 {
   if ( lastVBatAlarmState != state )
   {
@@ -66,7 +66,7 @@ void setBatAlarmState ( uint8_t state)
   }
   else
   {
-    if ( lastVBatAlarmStart - millis() > 3000 )
+    if ( millis() - lastVBatAlarmStart > 5000 )
     {
         //only HIGHER warning mode
         alarmArray[ALRM_FAC_VBAT] = max(alarmArray[ALRM_FAC_VBAT], state);
