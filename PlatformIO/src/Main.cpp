@@ -669,33 +669,79 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
   #endif
 
   #if defined(ARM_LEDS)
-    bool frontArmLedsOn = true;
-    if (NAV_state != NAV_STATE_NONE)
+
+    if ( calibratingG > 0 )  //gyro
     {
-      frontArmLedsOn = (currentTime & 0x20000) != 0;
-      if ((currentTime & 0x190000) != 0) frontArmLedsOn = false;
+        if ((currentTime & 0x010000) != 0) 
+        {
+          ARMLFLEDPIN_ON; ARMRFLEDPIN_ON;
+          ARMRBLEDPIN_ON; ARMLBLEDPIN_ON;
+        }
+        else
+        {
+          ARMLFLEDPIN_OFF; ARMRFLEDPIN_OFF;
+          ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF;
+        }
+        ARMGREENLEDPIN_OFF;
     }
-
-    if (failsafeCnt > 5)
+    else if ( calibratingA > 0 ) //acc
     {
-      frontArmLedsOn = false;
+        if ((currentTime & 0x10000) != 0) 
+        {
+          ARMLFLEDPIN_ON; ARMRFLEDPIN_ON;
+          ARMGREENLEDPIN_ON;
+        }
+        else
+        {
+          ARMLFLEDPIN_OFF; ARMRFLEDPIN_OFF;
+          ARMGREENLEDPIN_OFF;
+        }
+        ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF;
     }
-
-    if (frontArmLedsOn) { ARMLFLEDPIN_ON; ARMRFLEDPIN_ON; }
-    else { ARMLFLEDPIN_OFF; ARMRFLEDPIN_OFF;}
-
-    bool hasFix = f.GPS_FIX && (GPS_numSat >= 5);
-
-    bool backArmsLedsOn = true;
-    if (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_CRIT)
+    else if ( f.CALIBRATE_MAG )  //mag
+    { 
+        uint8_t c = (currentTime & 0x180000) >> 19;
+        ARMRFLEDPIN_OFF; ARMLFLEDPIN_OFF;
+        ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF;
+        ARMGREENLEDPIN_OFF;
+        switch (c)
+        {
+          case 0: ARMLFLEDPIN_ON; break;
+          case 1: ARMRFLEDPIN_ON; break;
+          case 2: ARMRBLEDPIN_ON; break;
+          case 3: ARMLBLEDPIN_ON; break;
+        }
+    }
+    else
     {
-      backArmsLedsOn = (currentTime & 0x40000) != 0;
+      bool frontArmLedsOn = true;
+      if (NAV_state != NAV_STATE_NONE)
+      {
+        frontArmLedsOn = (currentTime & 0x20000) != 0;
+        if ((currentTime & 0x190000) != 0) frontArmLedsOn = false;
+      }
+
+      if (failsafeCnt > 5)
+      {
+        frontArmLedsOn = false;
+      }
+
+      if (frontArmLedsOn) { ARMLFLEDPIN_ON; ARMRFLEDPIN_ON; }
+      else { ARMLFLEDPIN_OFF; ARMRFLEDPIN_OFF;}
+
+      bool hasFix = f.GPS_FIX && (GPS_numSat >= 5);
+
+      bool backArmsLedsOn = true;
+      if (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_CRIT)
+      {
+        backArmsLedsOn = (currentTime & 0x40000) != 0;
+      }
+
+      bool lowBattery = (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_CRIT) || (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_WARN);
+
+      if ( backArmsLedsOn && (lowBattery || !hasFix ) ) { ARMRBLEDPIN_ON; ARMLBLEDPIN_ON; } else { ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF; }
+      if (backArmsLedsOn && !lowBattery ) { ARMGREENLEDPIN_ON; } else { ARMGREENLEDPIN_OFF; }
     }
-
-    bool lowBattery = (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_CRIT) || (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_WARN);
-
-    if ( backArmsLedsOn && (lowBattery || !hasFix ) ) { ARMRBLEDPIN_ON; ARMLBLEDPIN_ON; } else { ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF; }
-    if (backArmsLedsOn && !lowBattery ) { ARMGREENLEDPIN_ON; } else { ARMGREENLEDPIN_OFF; }
 
 #endif
 
@@ -730,6 +776,20 @@ void setup() {
   //init motors output ASAP to avoid rotation
   initOutput();
 
+#ifdef ARM_LEDS
+  ARMLFLEDPIN_PINMODE;
+  ARMRFLEDPIN_PINMODE;
+  ARMLBLEDIN_PINMODE;
+  ARMRBLEDPIN_PINMODE;
+  ARMGREENLEDPIN_PINMODE;
+
+  ARMLFLEDPIN_OFF;
+  ARMRFLEDPIN_OFF;
+  ARMRBLEDPIN_ON;
+  ARMLBLEDPIN_ON;
+  ARMGREENLEDPIN_OFF;
+#endif
+
   SerialOpen(0,SERIAL0_COM_SPEED);
 
   Serial.println("init1");
@@ -762,13 +822,6 @@ void setup() {
   POWERPIN_PINMODE;
   BUZZERPIN_PINMODE;
   STABLEPIN_PINMODE;
-#ifdef ARM_LEDS
-  ARMLFLEDPIN_PINMODE;
-  ARMRFLEDPIN_PINMODE;
-  ARMLBLEDIN_PINMODE;
-  ARMRBLEDPIN_PINMODE;
-  ARMGREENLEDPIN_PINMODE;
-#endif
   POWERPIN_OFF;
 
   DEBUGPIN_PINMODE;
@@ -843,7 +896,12 @@ void setup() {
     initOpenLRS();
   #endif
   initSensors();
-  Serial.println("init8");
+Serial.println("init8");
+
+#ifdef ARM_LEDS
+  ARMLFLEDPIN_ON;
+  ARMRFLEDPIN_ON;
+#endif
 
   #if GPS
     GPS_set_pids();

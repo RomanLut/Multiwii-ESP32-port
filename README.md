@@ -96,6 +96,27 @@ Right stick trims are used to trim ACC in flight.
 
 
 
+Calibration
+==============
+
+Gyro calibration
+=================
+Performed automaticaly on start
+Yaw left + Thottle Low + Pitch LOW
+Blue and red leds blinking fast
+
+Accelerometer calibration
+==========================
+Should be done once
+Yaw left + Throttle Hi + Pitch LOW
+Blue and green leds blinking fast
+
+Simple procedure: Place on level surface, do not move.
+
+This firmware also contains more precise calibration procedure:
+Calibrate quad facing up, then calibrate quad facing down.
+
+
 Original readme below:
 
 

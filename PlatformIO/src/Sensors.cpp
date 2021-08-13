@@ -199,6 +199,11 @@ void GYRO_Common() {
     //---------------------------------------------------
   #endif
 
+  if ( calibratingG == 512)
+  {
+    Serial.println("Calibrating gyro");
+  }
+
 	if (calibratingG > 0) {
 		for (axis = 0; axis < 3; axis++) {
 			if (calibratingG == 512) { // Reset g[axis] at start of calibration
@@ -223,9 +228,14 @@ void GYRO_Common() {
 #if defined(GYROCALIBRATIONFAILSAFE)
 		if (tilt) {
 			calibratingG = 1000;
+      Serial.println("Calibrating gyro failed");
 			LEDPIN_ON;
 		} else {
 			calibratingG--;
+      if (calibratingG == 0)
+      {
+        Serial.println("Calibrating gyro done");
+      }
 			LEDPIN_OFF;
 		}
 		return;
