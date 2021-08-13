@@ -14,6 +14,7 @@ void led_flasher_autoselect_sequence();
 void init_landing_lights(void);
 void auto_switch_landing_lights(void);
 void PilotLamp(uint8_t count);
+void alarm_reset_on_arm();
 
 /*
 AlarmArray

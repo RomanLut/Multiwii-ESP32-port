@@ -102,9 +102,9 @@ void alarmHandler(void){
   
   #if defined(VBAT)
     if (vbatMin < conf.vbatlevel_crit) alarmArray[ALRM_FAC_VBAT] = ALRM_LVL_VBAT_CRIT;
-    else if ( (analog.vbat > conf.vbatlevel_warn1)  || (NO_VBAT > analog.vbat)) alarmArray[ALRM_FAC_VBAT] = ALRM_LVL_OFF;
-    else if (analog.vbat > conf.vbatlevel_warn2) alarmArray[ALRM_FAC_VBAT] = ALRM_LVL_VBAT_INFO;
-    else if (analog.vbat > conf.vbatlevel_crit) alarmArray[ALRM_FAC_VBAT] = ALRM_LVL_VBAT_WARN;
+    else if ( (analog.vbat > conf.vbatlevel_warn1)  || (NO_VBAT > analog.vbat)) alarmArray[ALRM_FAC_VBAT] = max( alarmArray[ALRM_FAC_VBAT], (uint8_t)ALRM_LVL_OFF );
+    else if (analog.vbat > conf.vbatlevel_warn2) alarmArray[ALRM_FAC_VBAT] = max( alarmArray[ALRM_FAC_VBAT], (uint8_t)ALRM_LVL_VBAT_INFO );
+    else if (analog.vbat > conf.vbatlevel_crit) alarmArray[ALRM_FAC_VBAT] = max( alarmArray[ALRM_FAC_VBAT], (uint8_t)ALRM_LVL_VBAT_WARN );
     //else alarmArray[6] = 4;
   #endif
   
@@ -702,4 +702,10 @@ void vario_output(uint16_t d, uint8_t up) {
 }
 
 #endif
+
+void alarm_reset_on_arm()
+{
+  alarmArray[ALRM_FAC_VBAT] = ALRM_LVL_OFF;  
+}
+
 

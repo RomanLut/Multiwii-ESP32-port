@@ -1026,9 +1026,9 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
     //For 3.7V battery:
     #define VBATSCALE        77 // (*) (**) change this value if readed Battery voltage is different than real voltage
     #define VBATNOMINAL      42 // 4.2V full battery nominal voltage - only used for lcd.telemetry
-    #define VBATLEVEL_WARN1  34 // (*) (**) 3.4V
-    #define VBATLEVEL_WARN2  33 // (*) (**) 3.3V
-    #define VBATLEVEL_CRIT   32 // (*) (**) 3.2V - critical condition: if vbat ever goes below this value, permanent alarm is triggered
+    #define VBATLEVEL_WARN1  35 // (*) (**) <=3.5V
+    #define VBATLEVEL_WARN2  34 // (*) (**) <=3.4V
+    #define VBATLEVEL_CRIT   33 // (*) (**) <3.3V - critical condition: if vbat ever goes below this value, permanent alarm is triggered
     #define NO_VBAT          15 // Avoid beeping without any battery
     #define VBAT_OFFSET       2 // offset in 0.1Volts, gets added to voltage value  - useful for zener diodes
 

@@ -732,7 +732,6 @@ void setup() {
 
   SerialOpen(0,SERIAL0_COM_SPEED);
 
-
   Serial.println("init1");
 
 #ifdef PS3RX
@@ -936,6 +935,7 @@ void setup() {
 
   Serial.println("init13");
 
+  alarm_reset_on_arm();
   blackboxInit();
 
   Serial.println("init14");
@@ -994,6 +994,8 @@ void go_arm() {
         // write now.
         writePLog();
       #endif
+
+      alarm_reset_on_arm();
 
       //blackboxStart();
     }
