@@ -314,7 +314,7 @@ void calculateAttitude(){
 
 bool hasImpact()
 {
-  return maxG > ACC_1G * 1.5f;
+  return maxG > ACC_1G * 1.0f;
 }
 
 void resetMaxG()
