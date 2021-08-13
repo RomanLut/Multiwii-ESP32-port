@@ -1557,7 +1557,7 @@ void loop () {
 
    blackboxUpdate(currentTime);
 
-  } // end of rc loop
+  } // end of rc loop 50hz
 
 
   computeIMU();

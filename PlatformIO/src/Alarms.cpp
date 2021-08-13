@@ -24,6 +24,9 @@ static int16_t  i2c_errors_count_old = 0;
 
 static uint8_t SequenceActive[5]={0,0,0,0,0};
 
+static uint8_t lastVBatAlarmState = -1;
+static uint32_t lastVBatAlarmStart;
+
 #if defined(BUZZER)
   uint8_t isBuzzerON(void) { return resourceIsOn[1]; } // returns true while buzzer is buzzing; returns 0 for silent periods
 #else
@@ -53,6 +56,24 @@ Resources:
 3: PL BLUE
 4: PL RED
 */
+
+void setBatAlarmState ( uint8_t state) 
+{
+  if ( lastVBatAlarmState != state )
+  {
+    lastVBatAlarmStart = millis();
+    lastVBatAlarmState = state;
+  }
+  else
+  {
+    if ( lastVBatAlarmStart - millis() > 3000 )
+    {
+        //only HIGHER warning mode
+        alarmArray[ALRM_FAC_VBAT] = max(alarmArray[ALRM_FAC_VBAT], state);
+    }
+  }
+}
+
 void alarmHandler(void){
   
   #if defined(RCOPTIONSBEEP)
@@ -101,10 +122,10 @@ void alarmHandler(void){
   #endif
   
   #if defined(VBAT)
-    if (vbatMin < conf.vbatlevel_crit) alarmArray[ALRM_FAC_VBAT] = ALRM_LVL_VBAT_CRIT;
-    else if ( (analog.vbat > conf.vbatlevel_warn1)  || (NO_VBAT > analog.vbat)) alarmArray[ALRM_FAC_VBAT] = max( alarmArray[ALRM_FAC_VBAT], (uint8_t)ALRM_LVL_OFF );
-    else if (analog.vbat > conf.vbatlevel_warn2) alarmArray[ALRM_FAC_VBAT] = max( alarmArray[ALRM_FAC_VBAT], (uint8_t)ALRM_LVL_VBAT_INFO );
-    else if (analog.vbat > conf.vbatlevel_crit) alarmArray[ALRM_FAC_VBAT] = max( alarmArray[ALRM_FAC_VBAT], (uint8_t)ALRM_LVL_VBAT_WARN );
+    if (vbatMin < conf.vbatlevel_crit) setBatAlarmState( ALRM_LVL_VBAT_CRIT );
+    else if ( (analog.vbat > conf.vbatlevel_warn1)  || (NO_VBAT > analog.vbat)) setBatAlarmState( ALRM_LVL_OFF );
+    else if (analog.vbat > conf.vbatlevel_warn2) setBatAlarmState( ALRM_LVL_VBAT_INFO );
+    else if (analog.vbat > conf.vbatlevel_crit) setBatAlarmState( ALRM_LVL_VBAT_WARN );
     //else alarmArray[6] = 4;
   #endif
   
