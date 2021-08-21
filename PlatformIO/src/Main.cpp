@@ -700,7 +700,7 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
     }
     else if ( f.CALIBRATE_MAG )  //mag
     { 
-        uint8_t c = (currentTime & 0x180000) >> 19;
+        uint8_t c = (currentTime & 0xC0000) >> 18;
         ARMRFLEDPIN_OFF; ARMLFLEDPIN_OFF;
         ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF;
         ARMGREENLEDPIN_OFF;

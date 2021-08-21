@@ -53,6 +53,10 @@
    Back arms red: battery low
    Back arms red blink: battery critical, land now
 
+   Red and Blue leds blinking fast: gyro calibration
+   Red and Green lads blinking fast: acc calibration
+   Red and blue leds moving in cyrcle: Magnetometer calibration
+
   *OLD:
   *2 - LED (LEDPIN, internal LED), ARM_LEDS_BLUE 2n7002 + 68 Ohm  -
   *12 - STABLE PIN LED (either acro/horison or GPS FIX indicator depending on GPS_LED_INDICATOR define)
@@ -86,7 +90,7 @@
 
   Free pins:
   0 - (not available on 30 pin board)
-  2,35,39
+  2(LED_PIN),35,39
 
   Serial ports:
   Serial0 - USB serial
@@ -104,7 +108,6 @@
   TODO:
   - OTA updates?
   - FRSky telemetry?
-  - ESP32CAM->Wifi RX receiver?
   - DAC - voiceover?  (DAC 25 26)
 
 

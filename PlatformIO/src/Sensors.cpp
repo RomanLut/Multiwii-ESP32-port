@@ -14,6 +14,7 @@
 #include "Sensors.h"
 #include "AltHold.h"
 
+uint32_t magBeep;
 
 static void Device_Mag_getADC();
 static void Baro_init();
@@ -1261,6 +1262,7 @@ uint8_t Mag_getADC() { // return 1 when news values are available, 0 otherwise
 
 		if (tCal == 0) {// init mag calibration
 			tCal = t;
+      magBeep = millis();
 		}
 		if ((t - tCal) < 30000000) { // 30s: you have 30s to turn drone in all directions
 			LEDPIN_TOGGLE;
@@ -1272,10 +1274,14 @@ uint8_t Mag_getADC() { // return 1 when news values are available, 0 otherwise
 				if (((int16_t)magADC_filtered[axis]) < magZeroTempMin[axis]) {
 					magZeroTempMin[axis] = magADC_filtered[axis];
 					SET_ALARM(ALRM_FAC_TOGGLE, ALRM_LVL_TOGGLE_1);
+          magBeep = millis() + 20;
+          tCal = max( tCal, (uint32_t)(t - 20000000));  //at least 10 seconds without new max/min
 				}
 				if (((int16_t)magADC_filtered[axis]) > magZeroTempMax[axis]) {
 					magZeroTempMax[axis] = magADC_filtered[axis];
 					SET_ALARM(ALRM_FAC_TOGGLE, ALRM_LVL_TOGGLE_1);
+          magBeep = millis() + 20;
+          tCal = max( tCal, (uint32_t)(t - 20000000));  //at least 10 seconds without new max/min
 				}
 				global_conf.magZero[axis] = (magZeroTempMin[axis]
 						+ magZeroTempMax[axis]) >> 1;

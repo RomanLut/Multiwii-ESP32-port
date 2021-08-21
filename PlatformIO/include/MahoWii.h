@@ -243,6 +243,6 @@ void resetTimer(dtimer_t * timer);
 #define MS2S(ms)    ((ms) * 1e-3f)
 #define MS2US(ms)   ((ms) * 1000)
 
-
+extern uint32_t magBeep;
 
 #endif /* MULTIWII_H_ */

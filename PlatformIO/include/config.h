@@ -217,6 +217,12 @@
       #define FORCE_GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -X; imu.gyroADC[PITCH] =  -Y; imu.gyroADC[YAW] = -Z;}
       #define FORCE_MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  =  Y; imu.magADC[PITCH]  =  -X; imu.magADC[YAW]  = -Z;}
 
+      /*
+       Z MAG should be positive and not move a lot if the multi remains flat.
+       X MAG: ROLL RIGHT = positive; ROLL LEFT = negative
+       Y MAG: PITCH FORWARD = positive; PITCH backward = negative
+      */  
+
       /* Board orientation shift */
       /* If you have frame designed only for + mode and you cannot rotate FC phisycally for flying in X mode (or vice versa)
        * you can use one of of this options for virtual sensors rotation by 45 deegres, then set type of multicopter according to flight mode.
