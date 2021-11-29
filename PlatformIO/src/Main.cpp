@@ -698,6 +698,7 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
         }
         ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF;
     }
+    /*
     else if ( f.CALIBRATE_MAG )  //mag
     { 
         uint8_t c = (currentTime & 0xC0000) >> 18;
@@ -712,14 +713,17 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
           case 3: ARMLBLEDPIN_ON; break;
         }
     }
+    */
     else
     {
       bool frontArmLedsOn = true;
+      /*
       if (NAV_state != NAV_STATE_NONE)
       {
         frontArmLedsOn = (currentTime & 0x20000) != 0;
         if ((currentTime & 0x190000) != 0) frontArmLedsOn = false;
       }
+      */
 
       if (failsafeCnt > 5)
       {
@@ -729,7 +733,8 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
       if (frontArmLedsOn) { ARMLFLEDPIN_ON; ARMRFLEDPIN_ON; }
       else { ARMLFLEDPIN_OFF; ARMRFLEDPIN_OFF;}
 
-      bool hasFix = f.GPS_FIX && (GPS_numSat >= 5);
+      //bool hasFix = f.GPS_FIX && (GPS_numSat >= 5);
+      bool hasFix = true;
 
       bool backArmsLedsOn = true;
       if (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_CRIT)
@@ -1707,7 +1712,7 @@ void loop () {
 
 
   //Heading manipulation 
-
+/*
   if (f.MAG_MODE || (f.GPS_mode == GPS_MODE_NAV) || (f.GPS_mode == GPS_MODE_RTH)) {
 
     int16_t rcYaw = mul(rcCommand[YAW], (2 * conf.yawRate + 30)) >> 5;
@@ -1731,7 +1736,7 @@ void loop () {
     //if (f.SMALL_ANGLES_25 || (f.GPS_mode != 0)) rcCommand[YAW] -= dif * conf.pid[PIDMAG].P8 >> 5;  //Always correct maghold in GPS mode
     rcCommand[YAW] = -dif * conf.pid[PIDMAG].P8 >> 1;
   }
-
+*/
 
 
 #if BARO

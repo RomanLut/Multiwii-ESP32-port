@@ -528,18 +528,12 @@ void writeMotors() { // [1000;2000] => [125;250]
       uint32_t t = millis() & 4095;
 
       if (
-            ( f.CALIBRATE_MAG && (magBeep > millis()) ) 
-            || 
-            ( 
-              !f.CALIBRATE_MAG &&   
-              (t < 200) &&
-              ( !(f.GPS_FIX && (GPS_numSat >= 5)) || t < 80 || t > 100)
-              )
-            )
+            (t < 200) && ( t < 80 || t > 100)
+          )
       {
         for (uint8_t i = 0; i < NUMBER_MOTOR; i++)
         {
-          ledcWrite(i, rcOptions[BOXBEEPERON]?6:f.CALIBRATE_MAG?1:(failsafeCnt > 5)?3:1);
+          ledcWrite(i, rcOptions[BOXBEEPERON]?6:(failsafeCnt > 5)?3:1);
         }
       }
       else

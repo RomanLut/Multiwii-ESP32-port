@@ -1726,10 +1726,10 @@
   #define POWERPIN_ON                 ;
   #define POWERPIN_OFF                ;
 
-  #define BUZZERPIN   
-  #define BUZZERPIN_PINMODE 
-  #define BUZZERPIN_ON 
-  #define BUZZERPIN_OFF 
+  #define BUZZERPIN 27  
+  #define BUZZERPIN_PINMODE pinMode (BUZZERPIN, OUTPUT) 
+  #define BUZZERPIN_ON digitalWrite(BUZZERPIN,HIGH)
+  #define BUZZERPIN_OFF digitalWrite(BUZZERPIN,LOW)
 
   #define V_BATPIN    36
 

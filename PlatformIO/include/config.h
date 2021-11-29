@@ -195,7 +195,7 @@
       /* I2C magnetometer */
       //#define HMC5843
       //#define HMC5883      //chip marking: L833
-      #define QMC5883        //chip marking: DA5883 or DB5833   https://forum.arduino.cc/index.php?topic=556590.0
+      //#define QMC5883        //chip marking: DA5883 or DB5833   https://forum.arduino.cc/index.php?topic=556590.0
       //#define AK8975
       //#define MAG3110
 
@@ -697,7 +697,7 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
 	 in NMEA mode the GPS must be configured to output GGA and RMC NMEA sentences (which is generally the default conf for most GPS devices)
 	 at least 5Hz update rate. uncomment the first line to select the GPS serial port of the arduino */
 
-	#define GPS_SERIAL 2         // should be 2 for flyduino v2. It's the serial port number on arduino MEGA
+	//#define GPS_SERIAL 2         // should be 2 for flyduino v2. It's the serial port number on arduino MEGA
 	// must be 0 for PRO_MINI (ex GPS_PRO_MINI)
 	// note: Now a GPS can share MSP on the same port. The only constrain is to not use it simultaneously, and use the same port speed.
 
@@ -1004,7 +1004,6 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
   /****                             Buzzer                         ****/
   /********************************************************************/
     #define BUZZER
-    #define BUZZER_PASSIVE    //ESP32 only, use passive buzzer on pin 12
     #define RCOPTIONSBEEP         // uncomment this if you want the buzzer to beep at any rcOptions change on channel Aux1 to Aux4
     //#define ARMEDTIMEWARNING 330  // (*) Trigger an alarm after a certain time of being armed [s] to save you lipo (if your TX does not have a countdown)
     //#define PILOTLAMP             //Uncomment if you are using a X-Arcraft Pilot Lamp

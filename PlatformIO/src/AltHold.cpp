@@ -340,6 +340,7 @@ bool isLanded() {
 
 #ifdef BUZZER
 void beepBuzzer(int16_t targetVario) {
+	/*
     static uint32_t varioBuzzerTime;
     static uint8_t buzzerCount;
 	if (currentTime > varioBuzzerTime) {
@@ -353,10 +354,11 @@ void beepBuzzer(int16_t targetVario) {
 			BUZZERPIN_OFF
 		}
 	}
+	*/
 }
 
 void inline stopBuzzer() {
-    BUZZERPIN_OFF
+    //BUZZERPIN_OFF
 }
 #endif
 
