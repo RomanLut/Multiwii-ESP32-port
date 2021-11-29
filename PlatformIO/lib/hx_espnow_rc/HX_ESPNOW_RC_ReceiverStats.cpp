@@ -24,7 +24,7 @@ void HXRCReceiverStats::reset()
     this->RSSIUpdateMs = t;
     this->RSSIPacketsReceived = 0;
     this->RSSIPacketsLost = 0;
-    this->RSSILast = 0;
+    this->RSSILast4 = 0;
 
     this->telemetryBytesReceivedTotal = 0;
     this->packetsRetransmit = 0;
@@ -49,7 +49,6 @@ bool HXRCReceiverStats::isFailsafe()
 //=====================================================================
 //=====================================================================
 //(percentage of packets received) 0...100
-//or -1 if not received for a long time
 uint8_t HXRCReceiverStats::getRSSI()
 {
     unsigned long t = millis();
@@ -61,12 +60,13 @@ uint8_t HXRCReceiverStats::getRSSI()
         uint16_t packetsLostCount = this->packetsLost - this->RSSIPacketsLost;
         uint16_t packetsTotalCount = packetsSuccessCount + packetsLostCount;
 
-        this->RSSILast = ( packetsTotalCount > 0 ) ? (((uint32_t)packetsSuccessCount) * 100 / packetsTotalCount) : 0;
+        this->RSSILast4 -= this->RSSILast4 >> 2;
+        this->RSSILast4 += ( packetsTotalCount > 0 ) ? (((uint32_t)packetsSuccessCount) * 100 / packetsTotalCount) : 0;
         this->RSSIPacketsReceived = this->packetsReceived;
         this->RSSIPacketsLost = this->packetsLost;
         this->RSSIUpdateMs = t; 
     }
-    return this->RSSILast;
+    return this->RSSILast4 >> 2;
 
 
 }

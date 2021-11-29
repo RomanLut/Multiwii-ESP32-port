@@ -39,6 +39,34 @@ void HXRCInitLedPin( const HXRCConfig& config )
     }
 }
 
+//=====================================================================
+//=====================================================================
+//https://esp32.com/viewtopic.php?t=13889
+#if defined(ESP32)
+HXRCPromiscuousCapture capture;
+
+static void ICACHE_RAM_ATTR sniffer_callback(void *buf, wifi_promiscuous_pkt_type_t type)
+{
+    if  (type != WIFI_PKT_MGMT) return;
+
+    static const uint8_t ACTION_SUBTYPE = 0xd0;
+
+    const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buf;
+    const wifi_ieee80211_packet_t *ipkt = (wifi_ieee80211_packet_t *)ppkt->payload;
+    const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;
+
+    if ( 
+        (ACTION_SUBTYPE == (hdr->frame_ctrl & 0xFF) ) &&
+        (memcmp( hdr->addr2, capture.peerMac, 6 ) == 0 )  //mac is first 6 digits
+    )
+    {
+        capture.rssi = ppkt->rx_ctrl.rssi;
+        capture.noiseFloor = ppkt->rx_ctrl.noise_floor;
+        capture.rate = ppkt->rx_ctrl.rate;
+        capture.packetsCount++;
+    }
+}
+#endif
 
 //=====================================================================
 //=====================================================================
@@ -60,6 +88,7 @@ bool HXRCInitEspNow( HXRCConfig& config )
     wifi_promiscuous_enable(false);
 
     //review: do we need to disable wifi sleep somehow?
+    //https://www.esp32.com/viewtopic.php?t=12772
     //esp_wifi_set_ps(WIFI_PS_NONE);
 
     Serial.print("HXESPNOWRC: Info: Board MAC address(STA): ");
@@ -89,6 +118,20 @@ bool HXRCInitEspNow( HXRCConfig& config )
 
     WiFi.mode(WIFI_STA);
 
+/*
+    Can't set rate without disabling AMPDU, disabling is impossible with Arduino SDK :(
+    "If you want to use esp_wifi_internal_set_fix_rate, please disable WiFi AMPDU TX by:
+     make menuconfig => components => Wi-Fi => Disable TX AMPDU."
+
+    if( config.LRMode)
+    {
+        if ( esp_wifi_internal_set_fix_rate(ESP_IF_WIFI_STA, true, WIFI_PHY_RATE_LORA_250K) != true )  //WIFI_PHY_RATE_1M_L
+        {
+            Serial.println("HXRC: Error: Failed to set rate");
+            //return false;
+        }
+    }
+*/
     esp_wifi_set_promiscuous(true); //promiscous mode is required to set channel on older SDK
     if ( esp_wifi_set_channel( config.wifi_channel, WIFI_SECOND_CHAN_NONE) != ESP_OK )
     {
@@ -97,24 +140,27 @@ bool HXRCInitEspNow( HXRCConfig& config )
     }
     esp_wifi_set_promiscuous(false); 
 
-    if ( esp_wifi_set_protocol (WIFI_IF_STA, config.LRMode ? WIFI_PROTOCOL_LR : ( WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N ) ) != ESP_OK)
+    //WIFI_PROTOCOL_11B - device will be able to send and receive WIFI_PROTOCOL_11B packets
+    //WIFI_PROTOCOL_LR | WIFI_PROTOCOL_11B - device will be able to receive WIFI_PROTOCOL_LR and WIFI_PROTOCOL_11B,
+    //it will send either WIFI_PROTOCOL_LR or WIFI_PROTOCOL_11B depending on supported type on peer
+    //WIFI_PROTOCOL_LR - device will be able to receive WIFI_PROTOCOL_LR and WIFI_PROTOCOL_11B, will send WIFI_PROTOCOL_LR only.
+    //If  WIFI_PROTOCOL_LR connects to (WIFI_PROTOCOL_LR | WIFI_PROTOCOL_11B), packets in one direction are WIFI_PROTOCOL_LR,
+    //packtes in other direction are  WIFI_PROTOCOL_11B
+    //So to force full LR communication, both peers should use exclusively WIFI_PROTOCOL_LR mode
+    if ( esp_wifi_set_protocol (WIFI_IF_STA, config.LRMode ? WIFI_PROTOCOL_LR : ( /*WIFI_PROTOCOL_LR |*/ WIFI_PROTOCOL_11B ) ) != ESP_OK)
     {
         Serial.println("HXRC: Error: Failed to enable LR mode");
         return false;
     }
 
-    /*
-#include "esp_private/wifi.h"
-ESP_ERROR_CHECK(esp_wifi_start());
-wifi_interface_t ifx = WIFI_IF_AP;
-ESP_ERROR_CHECK(esp_wifi_internal_set_fix_rate(ifx, true, WIFI_PHY_RATE_1M_L));
+    //set bandwidth to 20Mhz to decrease noise floor by 3dbm
+    //review: does it have any effect?
+    if ( esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20) != ESP_OK )
+    {
+        Serial.println("HXRC: Error: Failed to set bandwidth");
+        return false;
+    } 
 
-WIFI_PHY_RATE_LORA_250K
-
-If you want to use esp_wifi_internal_set_fix_rate, please disable WiFi AMPDU TX by:
-
-make menuconfig => components => Wi-Fi => Disable TX AMPDU.
-*/
     //Note: Wifi sleep should not be disabled if Wifi and Bluetooth coexist
     //https://github.com/espressif/arduino-esp32/issues/4965
     //https://github.com/espressif/esp-idf/issues/5759
@@ -155,6 +201,8 @@ make menuconfig => components => Wi-Fi => Disable TX AMPDU.
   }
 #endif
 
+    esp_wifi_set_promiscuous_rx_cb(&sniffer_callback);
+    esp_wifi_set_promiscuous(true); 
 
 #endif
 
@@ -183,4 +231,16 @@ uint32_t HXRC_crc32(const void* data, size_t length, uint32_t previousCrc32)
   while (length--)
     crc = (crc >> 8) ^ Crc32Lookup[(crc & 0xFF) ^ *current++];
   return ~crc;
+}
+
+//=====================================================================
+//=====================================================================
+void HXRCPrintMac( const uint8_t* mac ) 
+{
+    for ( int i = 0; i < 6; i++ ) 
+    {
+        if ( mac[i]<16 ) HXRCLOG.print("0");
+        HXRCLOG.print(mac[i],HEX);
+        if ( i < 5 ) HXRCLOG.print(":");
+    }
 }
