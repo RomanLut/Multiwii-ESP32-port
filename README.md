@@ -150,6 +150,59 @@ At least 30 seconds of calibration.
 Rotate quad in all directions. If you do not hear beeps anymore, try another direction of rotation.
 Calibration ends when no beeps are heard for 10 seconds.
 
+Arm LEDs colors
+=========================
+Front arms no lights - no RC signal
+Front arms blue solid - on, ok RC signal
+Front arms blue blink two times once per second - RTH, Failsafe or Landing
+
+Back arms green: battery ok, GPS fix
+Back arms yellow : battery ok, no GPS fix
+Back arms red: battery low
+Back arms red blink: battery critical, land now
+
+Red and Blue leds blinking fast: gyro calibration
+Red and Green leds blinking fast: acc calibration
+
+
+Pin allocation
+=========================
+1 - TX0
+3 - RX0
+
+4 - LF Blue LED  
+12 - RF Blue LED
+13 - LB RB Green LEDS
+14 - RB Red LED   
+15 - LB Red LED   
+
+21 - SDA 
+22 - SCL 
+
+36 - VBAT ADC
+
+25 - BL Motor
+26 - BR Motor
+
+27 - BUZZER EN
+
+32 - FR Motor
+33 - FL Motor
+
+Free pins:
+0 - (not available on 30 pin board)
+2 - board LED_PIN
+5 - 
+
+16 - RX2 
+17 - TX2 
+
+18 - SCK
+19 - MISO
+23- MOSI
+
+35 - (inpput only)
+39 - (input only)
 
 
 # Other projects
