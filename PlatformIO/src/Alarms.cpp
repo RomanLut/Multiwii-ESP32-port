@@ -75,7 +75,6 @@ void setBatAlarmState( uint8_t state)
 }
 
 void alarmHandler(void){
-  
   #if defined(RCOPTIONSBEEP)
     static uint8_t i = 0,firstrun = 1, last_rcOptions[CHECKBOXITEMS];
                   
@@ -97,7 +96,7 @@ void alarmHandler(void){
       if (failsafeCnt > 5*(FAILSAFE_DELAY+FAILSAFE_OFF_DELAY)) alarmArray[ALRM_FAC_FAILSAFE] = ALRM_LVL_FAILSAFE_FINDME;          //start "find me" signal after landing
     }
     if ( failsafeCnt > (5*FAILSAFE_DELAY) && !f.ARMED) alarmArray[ALRM_FAC_FAILSAFE] = ALRM_LVL_FAILSAFE_FINDME;                  // tx turned off while motors are off: start "find me" signal
-    if ( failsafeCnt == 0) alarmArray[ALRM_FAC_FAILSAFE] = ALRM_LVL_OFF;                                              // turn off alarm if TX is okay
+    if ( failsafeCnt < 2 ) alarmArray[ALRM_FAC_FAILSAFE] = ALRM_LVL_OFF;                                              // turn off alarm if TX is okay
   #endif
   
   #if GPS
@@ -142,7 +141,8 @@ void alarmPatternComposer(){
   // patternDecode(length1,length2,length3,beeppause,endpause,loop)
   #if defined(BUZZER)
     resource = 1;                                                                                  //buzzer selected
-    if      ( IS_ALARM_SET(ALRM_FAC_FAILSAFE , ALRM_LVL_FAILSAFE_FINDME) )       patternDecode(resource,200,0,0,50,2000);                       //failsafe "find me" signal
+    if ( IS_ALARM_SET(ALRM_FAC_BEEPERON , ALRM_LVL_ON) )  patternDecode(resource,50,50,50,50,50);            //BeeperOn
+    else if      ( IS_ALARM_SET(ALRM_FAC_FAILSAFE , ALRM_LVL_FAILSAFE_FINDME) )       patternDecode(resource,200,0,0,50,2000);                       //failsafe "find me" signal
     else if ( IS_ALARM_SET(ALRM_FAC_FAILSAFE , ALRM_LVL_FAILSAFE_PANIC) ||
                 IS_ALARM_SET(ALRM_FAC_ACC , ALRM_LVL_ON) ) patternDecode(resource,50,200,200,50,50); //failsafe "panic"  or Acc not calibrated
     else if ( IS_ALARM_SET(ALRM_FAC_TOGGLE , ALRM_LVL_TOGGLE_1) ) patternDecode(resource,50,0,0,50,0);           //toggle 1
@@ -150,8 +150,7 @@ void alarmPatternComposer(){
     else if ( IS_ALARM_SET(ALRM_FAC_TOGGLE , ALRM_LVL_TOGGLE_ELSE) )  patternDecode(resource,50,50,50,50,0);     //toggle else
     #if GPS
       else if ( IS_ALARM_SET(ALRM_FAC_GPS , ALRM_LVL_GPS_NOFIX) ) patternDecode(resource,50,50,0,50,50);         //gps installed but no fix
-    #endif
-    else if ( IS_ALARM_SET(ALRM_FAC_BEEPERON , ALRM_LVL_ON) )  patternDecode(resource,50,50,50,50,50);           //BeeperOn
+    #endif 
     #ifdef POWERMETER
       else if ( IS_ALARM_SET(ALRM_FAC_PMETER , ALRM_LVL_ON) ) patternDecode(resource,50,50,0,50,120);              //pMeter Warning
     #endif

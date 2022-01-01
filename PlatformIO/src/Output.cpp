@@ -533,7 +533,8 @@ void writeMotors() { // [1000;2000] => [125;250]
       {
         for (uint8_t i = 0; i < NUMBER_MOTOR; i++)
         {
-          ledcWrite(i, rcOptions[BOXBEEPERON]?6:(failsafeCnt > 5)?3:1);
+          //ledcWrite(i, rcOptions[BOXBEEPERON]?6:(failsafeCnt > 5)?3:1);
+          ledcWrite(i, 1);
         }
       }
       else
