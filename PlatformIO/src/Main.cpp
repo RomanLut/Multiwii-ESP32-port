@@ -734,7 +734,6 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
       else { ARMLFLEDPIN_OFF; ARMRFLEDPIN_OFF;}
 
       //bool hasFix = f.GPS_FIX && (GPS_numSat >= 5);
-      bool hasFix = true;
 
       bool backArmsLedsOn = true;
       if (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_CRIT)
@@ -742,10 +741,8 @@ void annexCode() { // this code is executed at each loop and won't interfere wit
         backArmsLedsOn = (currentTime & 0x40000) != 0;
       }
 
-      bool lowBattery = (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_CRIT) || (alarmArray[ALRM_FAC_VBAT] == ALRM_LVL_VBAT_WARN);
-
-      if ( backArmsLedsOn && (lowBattery || !hasFix ) ) { ARMRBLEDPIN_ON; ARMLBLEDPIN_ON; } else { ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF; }
-      if (backArmsLedsOn && !lowBattery ) { ARMGREENLEDPIN_ON; } else { ARMGREENLEDPIN_OFF; }
+      if ( backArmsLedsOn && (alarmArray[ALRM_FAC_VBAT] != ALRM_LVL_OFF) ) { ARMRBLEDPIN_ON; ARMLBLEDPIN_ON; } else { ARMRBLEDPIN_OFF; ARMLBLEDPIN_OFF; }
+      if ( backArmsLedsOn && (alarmArray[ALRM_FAC_VBAT] != ALRM_LVL_VBAT_CRIT) ) { ARMGREENLEDPIN_ON; } else { ARMGREENLEDPIN_OFF; }
     }
 
 #endif
