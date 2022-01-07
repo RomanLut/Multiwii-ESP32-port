@@ -57,10 +57,10 @@ public:
     //The following values: 
     //1) are awailable on Master only.
     //2) are wailable only if slave is based on ESP32.
-    //3) 0 if received is based on ESP8266
+    //3) are 0 if receiver is based on ESP8266
     uint8_t getRemoteRSSIDbm();  //RSSI in Dbm on slave. 70 means -70Dbm
     uint8_t getRemoteNoiseFloor();  //Noise floor on slave. 90 means - 90Dbm
-    uint8_t getRemoteSNR(); //Signal to noise ratio on salve oin Db.
+    uint8_t getRemoteSNR(); //Signal to noise ratio on slave in Db.
 
     void printStats();
     
