@@ -21,7 +21,7 @@ Goals:
 
 The goal is to build quadcopter based on ESP32 microcontroller, Eachine E58 motors and 3D-printed shell.
 
-# An ESP32 port of Mahowii firmware for DYI brushed quadcopter.
+Firmware is Mahowii port for ESP32.
 
 Mahowii is modified Multiwii firmware enchanced for quadcopters. Original Mahowii repository: https://github.com/mahowik/mahowii
 
