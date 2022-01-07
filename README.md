@@ -1,26 +1,31 @@
 [Work in progress]
 
 Goals:
-- esp32 port of Mahowii (Multiwii) (done)
-- control with PS3 controller (done)
-- MSP communication using ESP32 bluetooth with EZ-GUI for configuration (done)
-- stable flight in ACRO, HORIZON, ANGLE mode (done)
-- stable fight in AltHold mode (done)
-- stable fight in MagHold mode (done)
-- control with Jumper T-Lite, HX_ESPNOW_RC library https://github.com/RomanLut/hx_espnow_rc (done)
-- MSP communnication with EZ-GUI through HX_ESPNOW_RC library (done)
-- add blackbox, download logs from onboard ftp (done)
-- develop ESP32 flight controller board in EasyEDA (todo)
-- poshold mode (todo)
-- RTH (todo)
-- RTH failsafe (todo)
-- waypoint navigation (todo)
-- try other firmware (ardupilot, inav) ?
+- [x] esp32 port of Mahowii (Multiwii)
+- [x] control with PS3 controller
+- [x] MSP communication using ESP32 bluetooth with EZ-GUI for configuration 
+- [x] stable flight in ACRO, HORIZON, ANGLE mode 
+- [x] stable fight in AltHold mode 
+- [x] stable fight in MagHold mode 
+- [x] control with Jumper T-Lite, HX_ESPNOW_RC library https://github.com/RomanLut/hx_espnow_rc (done)
+- [x] MSP communnication with EZ-GUI through HX_ESPNOW_RC library 
+- [x] add blackbox, download logs from onboard ftp 
+- [ ] ~~develop ESP32 flight controller board in EasyEDA~~
+- [ ] ~~poshold mode~~
+- [ ] ~~RTH~~
+- [ ] ~~RTH failsafe~~
+- [ ] ~~waypoint navigation~~
+- [ ] ~~try other firmware (ardupilot, inav) ?~~
 
+# About this project
+
+The goal is to build quadcopter based on ESP32 microcontroller, Eachine E58 motors and 3D-printed shell.
 
 # An ESP32 port of Mahowii firmware for DYI brushed quadcopter.
 
-Changes:
+Mahowii is modified Multiwii firmware enchanced for quadcopters. Original Mahowii repository: https://github.com/mahowik/mahowii
+
+Changes implemented:
 - ESP32 port code fixes (32 bit arch fixes, EEPROM stub)
 - PlatformIO project setup
 - Added PS3 controller rx
@@ -32,7 +37,17 @@ Changes:
 - changed maghold mode: yaw stick controls target direction
 - adjusted default PIDs
 - control and MSP communication with HX_ESPNOW_RC library https://github.com/RomanLut/hx_espnow_rc
+- disabled GPS code
 
+# No GPS modes?
+
+Originaly I had a plan to implement Poshold, RTH and Waypoint navigation. Mahowii has code for that. But due to various reasong I decided to abandon this functionality:
+- quadcopter does not have enough power to fight the wind
+- I do not have enought outdoor time in calm weather for PID adjustments and testing
+- GPS sensor is additional weight
+- I little bit tired to fix and enchance old code :( It is better to try Ardupilot ESP32 port https://github.com/sh83/ardupilot/tree/esp32/libraries/AP_HAL_ESP32
+
+So I disabled GPS modes currently.
 
 TODO: details
 
