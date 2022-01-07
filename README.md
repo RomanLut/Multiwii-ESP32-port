@@ -19,6 +19,9 @@ Goals:
 
 # About this project
 
+![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad1.jpg "Photo 1")
+
+
 The goal is to build quadcopter based on ESP32 microcontroller, Eachine E58 motors and 3D-printed shell.
 
 Firmware is Mahowii port for ESP32.
@@ -49,9 +52,6 @@ Originaly I had a plan to implement Poshold, RTH and Waypoint navigation. Mahowi
 
 So I disabled GPS modes currently.
 
-TODO: details
-
-![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad1.jpg "Photo 1")
 ![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad2.jpg "Photo 2")
 
 Connection diagrams
