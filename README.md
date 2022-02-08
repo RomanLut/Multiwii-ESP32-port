@@ -42,16 +42,6 @@ Changes implemented:
 - control and MSP communication with HX_ESPNOW_RC library https://github.com/RomanLut/hx_espnow_rc
 - disabled GPS code
 
-# No GPS modes?
-
-Originaly I had a plan to implement Poshold, RTH and Waypoint navigation. Mahowii has code for that. But due to various reasong I decided to abandon this functionality:
-- quadcopter does not have enough power to fight the wind
-- I do not have enought outdoor time in calm weather for PID adjustments and testing
-- GPS sensor is additional weight
-- I little bit tired to fix and enchance old code :( It is better to try Ardupilot ESP32 port https://github.com/sh83/ardupilot/tree/esp32/libraries/AP_HAL_ESP32
-
-So I disabled GPS modes currently.
-
 ![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad2.jpg "Photo 2")
 
 Connection diagrams
@@ -155,16 +145,6 @@ Simple procedure: Place on level surface, do not move.
 This firmware also contains more precise calibration procedure:
 Calibrate quad facing up, then calibrate quad facing down.
 
-Magnetometer calibration
-=========================
-Should be done once of each new location
-Yaw right + Throttle Hi + Pitch Low
-Red and blue leds are blining in circle pattern
-
-At least 30 seconds of calibration.
-Rotate quad in all directions. If you do not hear beeps anymore, try another direction of rotation.
-Calibration ends when no beeps are heard for 10 seconds.
-
 Arm LEDs colors
 =========================
 Front arms no lights - no RC signal
@@ -219,6 +199,16 @@ Free pins:
 35 - (inpput only)
 39 - (input only)
 
+# No GPS modes?
+
+Originaly I had a plan to implement Poshold, RTH and Waypoint navigation. Mahowii has code for that. But due to various reasons I decided to abandon this functionality:
+- quadcopter does not have enough power to fight the wind
+- I do not have enought outdoor time in calm weather for PID adjustments and testing
+- GPS sensor is additional weight
+- I little bit tired to fix and enhance old code :( It is better to try Ardupilot ESP32 port https://github.com/sh83/ardupilot/tree/esp32/libraries/AP_HAL_ESP32
+
+So I disabled GPS modes currently.
+Old GPS wiring: https://github.com/RomanLut/mahowii/blob/upstream_shared/doc/gps_code/gps_code.md
 
 # Other projects
 
