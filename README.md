@@ -44,13 +44,15 @@ Changes implemented:
 
 # No GPS modes?
 
-Originaly I had a plan to implement Poshold, RTH and Waypoint navigation. Mahowii has code for that. But due to various reasong I decided to abandon this functionality:
+Originaly I had a plan to implement Poshold, RTH and Waypoint navigation. Mahowii has code for that. But due to various reasons I decided to abandon this functionality:
 - quadcopter does not have enough power to fight the wind
 - I do not have enought outdoor time in calm weather for PID adjustments and testing
 - GPS sensor is additional weight
-- I little bit tired to fix and enchance old code :( It is better to try Ardupilot ESP32 port https://github.com/sh83/ardupilot/tree/esp32/libraries/AP_HAL_ESP32
+- I little bit tired to fix and enhance old code :( It is better to try Ardupilot ESP32 port https://github.com/sh83/ardupilot/tree/esp32/libraries/AP_HAL_ESP32
 
 So I disabled GPS modes currently.
+Old GPS wiring: https://github.com/RomanLut/mahowii/blob/upstream_shared/doc/gps_code/gps_code.md
+
 
 ![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad2.jpg "Photo 2")
 
