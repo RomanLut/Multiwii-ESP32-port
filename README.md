@@ -157,16 +157,6 @@ Simple procedure: Place on level surface, do not move.
 This firmware also contains more precise calibration procedure:
 Calibrate quad facing up, then calibrate quad facing down.
 
-Magnetometer calibration
-=========================
-Should be done once of each new location
-Yaw right + Throttle Hi + Pitch Low
-Red and blue leds are blining in circle pattern
-
-At least 30 seconds of calibration.
-Rotate quad in all directions. If you do not hear beeps anymore, try another direction of rotation.
-Calibration ends when no beeps are heard for 10 seconds.
-
 Arm LEDs colors
 =========================
 Front arms no lights - no RC signal
