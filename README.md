@@ -1,5 +1,3 @@
-[Work in progress]
-
 Goals:
 - [x] esp32 port of Mahowii (Multiwii)
 - [x] control with PS3 controller
@@ -10,6 +8,7 @@ Goals:
 - [x] control with Jumper T-Lite, HX_ESPNOW_RC library https://github.com/RomanLut/hx_espnow_rc (done)
 - [x] MSP communnication with EZ-GUI through HX_ESPNOW_RC library 
 - [x] add blackbox, download logs from onboard ftp 
+- [ ] better documentaion, video
 - [ ] ~~develop ESP32 flight controller board in EasyEDA~~
 - [ ] ~~poshold mode~~
 - [ ] ~~RTH~~
