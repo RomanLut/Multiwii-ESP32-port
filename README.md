@@ -24,6 +24,8 @@ Goals:
 
 The goal is to build quadcopter based on ESP32 microcontroller, Eachine E58 motors and 3D-printed shell.
 
+Drone can be controlled with Dualshock 3 controller, or DIY controller based on https://github.com/RomanLut/hx_espnow_rc
+
 Firmware is Mahowii port for ESP32.
 
 Mahowii is modified Multiwii firmware enchanced for quadcopters. Original Mahowii repository: https://github.com/mahowik/mahowii
