@@ -45,6 +45,8 @@ Changes implemented:
 
 ![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad2.jpg "Photo 2")
 
+*This project requiers understading of multiwii basics. You will have to make it work for you. No step-by-step build guide is provided here.*
+
 Connection diagrams
 ===================
 
@@ -55,49 +57,24 @@ Connection diagrams
 
 Recommended AUX settings (to be configured in EZ-GUI)
 ========================
-AUX1 Mid (Arm, Acro)(Mode 0)
- Arm
-
-AUX2 Mid (Angle)(Mode 1):
- Angle
-
-AUX2 High (Alt Hold)(Mode 2):
- Angle
- Alt Hold
-
-AUX3 Mid (3D Cruise)(Mode 3):
- Angle
- Alt Hold
- Mag
- GPS Hold
-
-AUX3 High (Home)(Mode 4):
- Angle
- Alt Hold
- Mag
- GPS Home
-
-AUX4 Mid (Mission)(Mode 5):
- Angle
- Alt Hold
- Mag
- Mission
-
-AUX4 High (Land)(Mode 6):
- Angle
- Land
-
+- UX1 Mid (Arm, Acro)(Mode 0): Arm
+- AUX2 Mid (Angle)(Mode 1): Angle
+- AUX2 High (Alt Hold)(Mode 2): Angle + Alt Hold
+- AUX3 Mid (3D Cruise)(Mode 3): Angle + Alt Hold + Mag + GPS Hold
+- AUX3 High (Home)(Mode 4): Angle + Alt Hold + Mag + GPS Home
+- AUX4 Mid (Mission)(Mode 5): Angle + Alt Hold + Mag + Mission
+- AUX4 High (Land)(Mode 6): Angle + Land
 
 PS3 Controler assignments
 ===========
-Arm/Disarm - Start. Arm with Throttle down!
-Acro(Mode 0) - PS3 Left Thumb
-Angle(Mode 1) - PS3 Square 
-Alt Hold(Mode 2) - PS3 Triangle 
-3D Cruise(Mode3) - PS3 Circle
-Home(Mode4) - PS3 Cross 
-Mission(Mode 5) - PS3 Select
-Land(Mode 6)- PS3 Right thumb 
+- Arm/Disarm - Start. Arm with Throttle down!
+- Acro(Mode 0) - PS3 Left Thumb
+- Angle(Mode 1) - PS3 Square 
+- Alt Hold(Mode 2) - PS3 Triangle 
+- 3D Cruise(Mode3) - PS3 Circle
+- Home(Mode4) - PS3 Cross 
+- Mission(Mode 5) - PS3 Select
+- Land(Mode 6)- PS3 Right thumb 
 
 PS3 D-pad is used for ACC trim.
 
@@ -105,25 +82,20 @@ TODO: PS3 controller pairing documentation
 
 Jumper T-Lite setup
 ===================
-AUX1: SWC 50% offset -50
- + TEu 5% 
- + TEd 10%
- + TAl 15%
- + TAr 20%
-AUX2: SWA
-AUX3: SWB
-AUX4: SWD 50% offset -50%
+- AUX1: (SWC 50% offset -50) + (TEu 5%) + (TEd 10%) + (TAl 15%) + (TAr 20%)
+- AUX2: SWA
+- AUX3: SWB
+- AUX4: (SWD 50% offset -50%)
 
 Disable trims in FlightMode 0.
 
+Controls:
 
-SWC - Arm
-SWA - Acro / Angle / AltHold
-SWB - None /3DCruise / Home
-SWD - Mission
-Right stick trims are used to trim ACC in flight.
-
-
+- SWC - Arm
+- SWA - Acro / Angle / AltHold
+- SWB - None /3DCruise / Home
+- SWD - Mission
+- Right stick trims are used to trim ACC in flight.
 
 
 Calibration
@@ -132,73 +104,78 @@ Calibration
 Gyro calibration
 =================
 Performed automaticaly on start
+
 Yaw left + Thottle Low + Pitch LOW
+
 Blue and red leds blinking fast
 
 Accelerometer calibration
 ==========================
 Should be done once
+
 Yaw left + Throttle Hi + Pitch LOW
+
 Blue and green leds blinking fast
 
 Simple procedure: Place on level surface, do not move.
 
 This firmware also contains more precise calibration procedure:
+
 Calibrate quad facing up, then calibrate quad facing down.
 
 Arm LEDs colors
 =========================
-Front arms no lights - no RC signal
-Front arms blue solid - on, ok RC signal
-Front arms blue blink two times once per second - RTH, Failsafe or Landing
+- Front arms no lights - no RC signal
+- Front arms blue solid - on, ok RC signal
+- Front arms blue blink two times once per second - RTH, Failsafe or Landing
 
-Back arms green: battery ok, GPS fix
-Back arms yellow : battery ok, no GPS fix
-Back arms red: battery low
-Back arms red blink: battery critical, land now
+- Back arms green: battery ok, GPS fix
+- Back arms yellow : battery ok, no GPS fix
+- Back arms red: battery low
+- Back arms red blink: battery critical, land now
 
-Red and Blue leds blinking fast: gyro calibration
-Red and Green leds blinking fast: acc calibration
+- Red and Blue leds blinking fast: gyro calibration
+- Red and Green leds blinking fast: acc calibration
 
 
 Pin allocation
 =========================
-1 - TX0
-3 - RX0
+- 1 - TX0
+- 3 - RX0
 
-4 - LF Blue LED  
-12 - RF Blue LED
-13 - LB RB Green LEDS
-14 - RB Red LED   
-15 - LB Red LED   
+- 4 - LF Blue LED  
+- 12 - RF Blue LED
+- 13 - LB RB Green LEDS
+- 14 - RB Red LED   
+- 15 - LB Red LED   
 
-21 - SDA 
-22 - SCL 
+- 21 - SDA 
+- 22 - SCL 
 
-36 - VBAT ADC
+- 36 - VBAT ADC
 
-25 - BL Motor
-26 - BR Motor
+- 25 - BL Motor
+- 26 - BR Motor
 
-27 - BUZZER EN
+- 27 - BUZZER EN
 
-32 - FR Motor
-33 - FL Motor
+- 32 - FR Motor
+- 33 - FL Motor
 
-Free pins:
-0 - (not available on 30 pin board)
-2 - board LED_PIN
-5 - 
+- Free pins:
+- 0 - (not available on 30 pin board)
+- 2 - board LED_PIN
+- 5 - 
 
-16 - RX2 
-17 - TX2 
+- 16 - RX2 
+- 17 - TX2 
 
-18 - SCK
-19 - MISO
-23- MOSI
+- 18 - SCK
+- 19 - MISO
+- 23- MOSI
 
-35 - (inpput only)
-39 - (input only)
+- 35 - (inpput only)
+- 39 - (input only)
 
 # No GPS modes?
 
@@ -209,6 +186,7 @@ Originaly I had a plan to implement Poshold, RTH and Waypoint navigation. Mahowi
 - I little bit tired to fix and enhance old code :( It is better to try Ardupilot ESP32 port https://github.com/sh83/ardupilot/tree/esp32/libraries/AP_HAL_ESP32
 
 So I disabled GPS modes currently.
+
 Old GPS wiring: https://github.com/RomanLut/mahowii/blob/upstream_shared/doc/gps_code/gps_code.md
 
 # Other projects
