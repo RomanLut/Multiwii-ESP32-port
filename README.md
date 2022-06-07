@@ -198,6 +198,7 @@ http://espcopter.com/community/
 https://www.bitcraze.io/products/crazyflie-2-1/
 https://readdevops.com/espressif/esp-drone
 https://github.com/joshuasrcho/ESP32-Quadcopter
+https://docs.espressif.com/projects/espressif-esp-drone/en/latest/gettingstarted.html
 https://github.com/davidbuzz/ardupilot/blob/esp32_master_new_flat/libraries/AP_HAL_ESP32/README.md
 https://github.com/RomanLut/hx_espnow_rc
 
