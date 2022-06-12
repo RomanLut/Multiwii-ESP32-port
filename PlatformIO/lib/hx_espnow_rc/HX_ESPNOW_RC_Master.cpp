@@ -118,7 +118,6 @@ bool HXRCMaster::init( HXRCConfig config )
     esp_now_register_recv_cb(OnDataRecvStatic);
 
     this->lastReceived = 0;
-    this->delta256 = 0;
 
     return true;
 }
@@ -132,7 +131,7 @@ void HXRCMaster::loop()
         unsigned long t = millis();
         unsigned long deltaT = t - transmitterStats.lastSendTimeMs;
 
-        int count = (deltaT)/ DEFAULT_PACKET_SEND_PERIOD_MS;
+        int count = deltaT / (this->config.LRMode ? DEFAULT_PACKET_SEND_PERIOD_LR_MS : DEFAULT_PACKET_SEND_PERIOD_MS);
         if ( count > 1)
         {
             outgoingData.packetId += count - 1;  //missed time to send packet(s) with desired rate
@@ -179,15 +178,6 @@ void HXRCMaster::loop()
 void HXRCMaster::setChannelValue(uint8_t index, uint16_t data)
 {
     this->channels.setChannelValue( index, data );
-}
-
-//=====================================================================
-//=====================================================================
-void HXRCMaster::printDelta()
-{
-    int16_t d = DEFAULT_PACKET_SEND_PERIOD_MS / 2 - (this->delta256 >> 8 );
-    Serial.print("Delta: ");
-    Serial.println(d);
 }
 
 //=====================================================================
