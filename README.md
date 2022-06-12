@@ -194,6 +194,9 @@ Free pins:
 - 35 - (inpput only)
 - 39 - (input only)
 
+# STL files for printing
+TODO share STL files on thingiverse
+
 # No GPS modes?
 
 Originaly I had a plan to implement Poshold, RTH and Waypoint navigation. Mahowii has code for that. But due to various reasons I decided to abandon this functionality:
