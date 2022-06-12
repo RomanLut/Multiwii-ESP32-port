@@ -56,7 +56,7 @@ Changes implemented:
 
 # EZ_GUI connection
 
-Drone settings can be edited be edited with EZ-GUI application: https://play.google.com/store/apps/details?id=com.ezio.multiwii
+EZ-GUI application can be used to see telemetry and edit drone settings: https://play.google.com/store/apps/details?id=com.ezio.multiwii
 
 This is optional. When you flash ESP32 first time, PIDs and AUX settings described below are applied.
 
@@ -105,7 +105,7 @@ Channel assignments:
 - CH12: MAX, Switch: tAd
 - CH16: MAX, Weight:0,Offset -80% ( hx_espnow_rc LR profile selection - profile 2)
 
-Disable trims in FlightMode 0. Right stick trim buttons are used to tick ACC in flight. Channels used for trinni
+Disable trims in FlightMode 0. Right stick trim buttons are used to trim ACC in flight. 
 
 Controls:
 - SWC - Arm
@@ -113,6 +113,7 @@ Controls:
 - SWD - Beeper
 - Right stick trims are used to trim ACC in flight.
 
+Battery voltage, RSSI and more telemetry sensors are sent as SPORT telemetry.
 
 # Calibration
 
