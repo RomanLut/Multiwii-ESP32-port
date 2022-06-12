@@ -180,11 +180,11 @@ void LoadDefaults() {
     // do that at the last possible moment, so we can override virtually all defaults and constants
   #else
 
-	  conf.pid[ROLL].P8     = 20;  conf.pid[ROLL].I8    = 10; conf.pid[ROLL].D8     = 25;
-	  conf.pid[PITCH].P8    = 20; conf.pid[PITCH].I8    = 10; conf.pid[PITCH].D8    = 25;
+	  conf.pid[ROLL].P8     = 30;  conf.pid[ROLL].I8    = 25; conf.pid[ROLL].D8     = 20;
+	  conf.pid[PITCH].P8    = 30; conf.pid[PITCH].I8    = 50; conf.pid[PITCH].D8    = 20;
 	  conf.pid[PIDLEVEL].P8 = 80; conf.pid[PIDLEVEL].I8 = 1;  conf.pid[PIDLEVEL].D8 = 100;
 
-    conf.pid[YAW].P8      = 200;  conf.pid[YAW].I8     = 10;  conf.pid[YAW].D8     = 0;
+    conf.pid[YAW].P8      = 200;  conf.pid[YAW].I8     = 200;  conf.pid[YAW].D8     = 0;
     #ifdef MS561101BA
       conf.pid[PIDALT].P8   = 50; conf.pid[PIDALT].I8   = 20; conf.pid[PIDALT].D8   = 16;
     #else
@@ -195,17 +195,24 @@ void LoadDefaults() {
     conf.pid[PIDPOSR].P8 = POSHOLD_RATE_P * 10; conf.pid[PIDPOSR].I8   = POSHOLD_RATE_I * 100;  conf.pid[PIDPOSR].D8   = POSHOLD_RATE_D * 1000;
     conf.pid[PIDNAVR].P8 = NAV_P * 10;          conf.pid[PIDNAVR].I8   = NAV_I * 100;           conf.pid[PIDNAVR].D8   = NAV_D * 1000;
   
-    conf.pid[PIDMAG].P8   = 50;
+    conf.pid[PIDMAG].P8   = 100;
 
     conf.pid[PIDVEL].P8 = 80;      conf.pid[PIDVEL].I8 = 1;    conf.pid[PIDVEL].D8 = 10;
 
     conf.rcRate8 = 70; conf.rcExpo8 = 60;
-    conf.rollPitchRate = 0;
-    conf.yawRate = 0;
+    conf.rollPitchRate = 20;
+    conf.yawRate = 20;
     conf.dynThrPID = 0;
     conf.thrMid8 = 50; conf.thrExpo8 = 35;
     for(i=0;i<CHECKBOXITEMS;i++) {conf.activate[i] = 0;}
+
+    conf.activate[BOXARM] = 6;
+    conf.activate[BOXANGLE] = 48;
+    conf.activate[BOXBARO] = 32;
+    conf.activate[BOXBEEPERON] = 2048;
+
     conf.angleTrim[0] = 0; conf.angleTrim[1] = 0;
+
     conf.powerTrigger1 = 0;
   #endif // SUPPRESS_DEFAULTS_FROM_GUI
   #if defined(SERVO)

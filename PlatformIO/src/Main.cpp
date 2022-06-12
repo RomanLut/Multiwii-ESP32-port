@@ -1000,6 +1000,17 @@ Serial.println("init8");
 
   Serial.println("init14");
 
+  Serial.print("BOXARM:");
+  Serial.println(conf.activate[BOXARM]);
+
+  Serial.print("BOXANGLE:");
+  Serial.println(conf.activate[BOXANGLE]);
+
+  Serial.print("BOXBARO:");
+  Serial.println(conf.activate[BOXBARO]);
+
+  Serial.print("BOXBEEPERON:");
+  Serial.println(conf.activate[BOXBEEPERON]);
 }
 
 void go_arm() {
