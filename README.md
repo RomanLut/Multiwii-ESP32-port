@@ -55,46 +55,53 @@ Connection diagrams
 ![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/led_wiring.jpg "led_wiring")
 
 
-Recommended AUX settings (to be configured in EZ-GUI)
+AUX settings 
 ========================
-- UX1 Mid (Arm, Acro)(Mode 0): Arm
-- AUX2 Mid (Angle)(Mode 1): Angle
-- AUX2 High (Alt Hold)(Mode 2): Angle + Alt Hold
-- AUX3 Mid (3D Cruise)(Mode 3): Angle + Alt Hold + Mag + GPS Hold
-- AUX3 High (Home)(Mode 4): Angle + Alt Hold + Mag + GPS Home
-- AUX4 Mid (Mission)(Mode 5): Angle + Alt Hold + Mag + Mission
-- AUX4 High (Land)(Mode 6): Angle + Land
+- AUX1 Mid:  Arm
+- AUX1 High: Arm
+- AUX2 Mid:  Angle
+- AUX2 High: Angle + Alt Hold
+- AUX4 High: Beeper
 
 PS3 Controler assignments
-===========
+========================
 - Arm/Disarm - Start. Arm with Throttle down!
 - Acro(Mode 0) - PS3 Left Thumb
 - Angle(Mode 1) - PS3 Square 
 - Alt Hold(Mode 2) - PS3 Triangle 
-- 3D Cruise(Mode3) - PS3 Circle
-- Home(Mode4) - PS3 Cross 
-- Mission(Mode 5) - PS3 Select
-- Land(Mode 6)- PS3 Right thumb 
 
 PS3 D-pad is used for ACC trim.
 
 TODO: PS3 controller pairing documentation
 
 Jumper T-Lite setup
-===================
-- AUX1: (SWC 50% offset -50) + (TEu 5%) + (TEd 10%) + (TAl 15%) + (TAr 20%)
-- AUX2: SWA
-- AUX3: SWB
-- AUX4: (SWD 50% offset -50%)
+========================
+Jumper t-lite have to be configured to use HX_ESPNOW_RC LR profile.
+AERT
+- CH5: SWC
+- CH6: SWA 
+- CH8: SWD
+- CH9: MAX, Switch: tEu
+- CH10: MAX, Switch: tEd
+- CH11: MAX, Switch: tAu
+- CH12: MAX, Switch: tAd
+- CH16: MAX, Weight:0,Offset -80% ( hx_espnow_rc LR profile selection - profile 2)
+
 
 Disable trims in FlightMode 0.
+
+CH5 values for trimming:
+CH9  UP
+CH10 DN
+CH11 LEFT
+CH12 RIGHT
+
 
 Controls:
 
 - SWC - Arm
 - SWA - Acro / Angle / AltHold
-- SWB - None /3DCruise / Home
-- SWD - Mission
+- SWD - Beeper
 - Right stick trims are used to trim ACC in flight.
 
 
@@ -126,11 +133,10 @@ Calibrate quad facing up, then calibrate quad facing down.
 Arm LEDs colors
 =========================
 - Front arms no lights - no RC signal
-- Front arms blue solid - on, ok RC signal
-- Front arms blue blink two times once per second - RTH, Failsafe or Landing
+- Front arms blue solid - ok RC signal
 
-- Back arms green: battery ok, GPS fix
-- Back arms yellow : battery ok, no GPS fix
+- Back arms green: battery ok
+- Back arms yellow: battery near low
 - Back arms red: battery low
 - Back arms red blink: battery critical, land now
 
