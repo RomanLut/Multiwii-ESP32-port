@@ -43,14 +43,13 @@ void HXRCLoop()
     }
 
     //detect trims
-    uint16_t ch = HXRCReadRawRC(4); //AUX1
     prevTrim = thisTrim;
 
-    if ( ch < (1500+12) ) thisTrim = -1;
-    else if ( ch < (1525+12) ) thisTrim = 0;  //5 - 1525 UP
-    else if ( ch < (1550+12) ) thisTrim = 1;  //10 - 1550 DN
-    else if ( ch < (1575+12) ) thisTrim = 2;  //15 - 1575 LEFT
-    else if ( ch < (1600+12) ) thisTrim = 3;  //20 - 1600 RIGHT
+    thisTrim = -1;
+    if ( HXRCReadRawRC(8) > 1750 ) thisTrim = 0; //CH9 trUP
+    else if ( HXRCReadRawRC(9) > 1750 ) thisTrim = 1;  //CH10 trDN
+    else if ( HXRCReadRawRC(10) > 1750 ) thisTrim = 2;  //CH11 trLEFT
+    else if ( HXRCReadRawRC(11) > 1750 ) thisTrim = 3;  //CH12 trRIGHT
 
     if ( prevTrim == -1 )
     {
