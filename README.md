@@ -53,8 +53,9 @@ Changes implemented:
 
 ![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/led_wiring.jpg "led_wiring")
 
-
 # EZ_GUI connection
+
+<img src="https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/ezgui1.png" width="50%" height="50%" />
 
 EZ-GUI application can be used to see telemetry and edit drone settings: https://play.google.com/store/apps/details?id=com.ezio.multiwii
 
@@ -71,8 +72,11 @@ If drone is controlled with HX_ESPNOW_RC controller, you have to connect to RC C
 - AUX2 High: Angle + Alt Hold
 - AUX4 High: Beeper
 
+![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/ezgui3.png "ezgui aux")
+
 # PID settings 
-TODO
+
+![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/ezgui2.png "ezgui pid")
 
 # PS3 Controler 
 
