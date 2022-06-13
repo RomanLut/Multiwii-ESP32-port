@@ -79,7 +79,7 @@ If drone is controlled with HX_ESPNOW_RC controller, you have to connect to RC C
 
 # PS3 Controler 
 
-![](/doc/dualshock3.png)
+![](/doc/dualshock3.jpg)
 
 Drone can be controlled using Dualshock 3 controller (original only!).
 
@@ -95,7 +95,7 @@ Dualshick 3 D-pad is used for ACC trim in flight.
 
 # Jumper T-Lite setup
 
-![](/doc/ExternalModule.png)
+![](/doc/ExternalModule.jpg)
 
 Drone can be controlled with Jumper T-lite or similar controller with HX_ESPNOW_RC external module https://github.com/RomanLut/hx_espnow_rc/blob/main/doc/tx_external_module.md
 
