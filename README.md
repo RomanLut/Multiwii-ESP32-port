@@ -18,8 +18,7 @@ Goals:
 
 # About this project
 
-![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad1.jpg "Photo 1")
-
+![](/doc/quad1.jpg)
 
 The goal is to build quadcopter based on ESP32 microcontroller, Eachine E58 motors and 3D-printed shell.
 
@@ -43,15 +42,15 @@ Changes implemented:
 - control and MSP communication with HX_ESPNOW_RC library https://github.com/RomanLut/hx_espnow_rc
 - disabled GPS code
 
-![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/quad2.jpg "Photo 2")
+![](/doc/quad2.jpg)
 
 *This project requiers understading of multiwii basics. You will have to make it work for you. No step-by-step build guide is provided here.*
 
 # Connection diagrams
 
-![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/wiring.jpg "wiring")
+![](/doc/wiring.jpg)
 
-![alt text](https://raw.githubusercontent.com/RomanLut/mahowii/upstream_shared/doc/led_wiring.jpg "led_wiring")
+![](/doc/led_wiring.jpg)
 
 # EZ_GUI connection
 
@@ -80,6 +79,8 @@ If drone is controlled with HX_ESPNOW_RC controller, you have to connect to RC C
 
 # PS3 Controler 
 
+![](/doc/dualshock3.png)
+
 Drone can be controlled using Dualshock 3 controller (original only!).
 
 Refer to esp32-ps3 https://github.com/jvpernis/esp32-ps3 how to pair drone with controller. 
@@ -93,6 +94,8 @@ Controls:
 Dualshick 3 D-pad is used for ACC trim in flight.
 
 # Jumper T-Lite setup
+
+![](/doc/ExternalModule.png)
 
 Drone can be controlled with Jumper T-lite or similar controller with HX_ESPNOW_RC external module https://github.com/RomanLut/hx_espnow_rc/blob/main/doc/tx_external_module.md
 
