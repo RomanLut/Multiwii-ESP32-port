@@ -8,7 +8,7 @@ Goals:
 - [x] control with Jumper T-Lite, HX_ESPNOW_RC library https://github.com/RomanLut/hx_espnow_rc (done)
 - [x] MSP communnication with EZ-GUI through HX_ESPNOW_RC library 
 - [x] add blackbox, download logs from onboard ftp 
-- [ ] better documentaion, video
+- [x] better documentaion, video
 - [ ] ~~develop ESP32 flight controller board in EasyEDA~~
 - [ ] ~~poshold mode~~
 - [ ] ~~RTH~~
@@ -18,11 +18,13 @@ Goals:
 
 # About this project
 
+Click to see video: http://www.youtube.com/watch?v=lwrkspHjSu4
+
 ![](/doc/quad1.jpg)
 
 The goal is to build quadcopter based on ESP32 microcontroller, Eachine E58 motors and 3D-printed shell.
 
-Drone can be controlled with Dualshock 3 controller, or DIY controller based on https://github.com/RomanLut/hx_espnow_rc
+Drone can be controlled with Dualshock 3 gamepad, or DIY controller based on https://github.com/RomanLut/hx_espnow_rc
 
 Firmware is Mahowii port for ESP32.
 
@@ -81,7 +83,9 @@ If drone is controlled with HX_ESPNOW_RC controller, you have to connect to RC C
 
 ![](/doc/dualshock3.jpg)
 
-Drone can be controlled using Dualshock 3 controller (original only!).
+Drone can be controlled using Dualshock 3 gamepad (original only!).
+
+Effective distance is <50m.
 
 Refer to esp32-ps3 https://github.com/jvpernis/esp32-ps3 how to pair drone with controller. 
 
@@ -91,15 +95,17 @@ Controls:
 - Angle(Mode 1) - PS3 Square 
 - Alt Hold(Mode 2) - PS3 Triangle 
 
-Dualshick 3 D-pad is used for ACC trim in flight.
+Dualshock 3 D-pad is used for ACC trim in flight.
 
 # Jumper T-Lite setup
 
 ![](/doc/ExternalModule.jpg)
 
-Drone can be controlled with Jumper T-lite or similar controller with HX_ESPNOW_RC external module https://github.com/RomanLut/hx_espnow_rc/blob/main/doc/tx_external_module.md
+Drone can be controlled by Jumper T-lite or similar controller with HX_ESPNOW_RC external module https://github.com/RomanLut/hx_espnow_rc/blob/main/doc/tx_external_module.md
 
 Jumper t-lite have to be configured to use HX_ESPNOW_RC profile.
+
+Effective distance is more then 200m.
 
 Channel assignments:
 - AERT
@@ -120,13 +126,13 @@ Controls:
 - SWD - Beeper
 - Right stick trims are used to trim ACC in flight.
 
-Battery voltage, RSSI and more telemetry sensors are sent as SPORT telemetry.
+Battery voltage, RSSI, height and other telemetry sensors are sent as SPORT telemetry.
 
 # Calibration
 
 
 # Gyro calibration
-Performed automaticaly on start
+Performed automaticaly on power on.
 
 Yaw left + Thottle Low + Pitch LOW.
 
@@ -166,11 +172,15 @@ Calibration:
 
 Drone can write blackbox log to FPIFFS filesystem in Cleanflight log format https://github.com/cleanflight/blackbox-log-viewer
 
+![](/doc/blackbox.png)
+
 To enable logging, uncomment `#define BLACKBOX` in config.h.
 
-Log can be downloaded from using FTP connection. Connect to drone's Wifi AP. Conntect to ftp using User: "quad", password: "12345678" credentials.
+Logs can be downloaded using HTPP of FTP connection. Connect to drone's Wifi AP: user"quad", password:"12345678". Browse "http://192.168.4.1" or connect to ftp://192.168.4.1 using User: "anonymous", password: "anonymous".
 
-*Note: Log to fresh SPIFFS. To refresh SPIFFS, "Upload filesystem" using PlatformIO. After creating/deeting files, SPIFFS filesystem became fragmented. It's perfomance will degrade and affect cycle time. Drone will start ot "hickup". Disable blackbox for normal usage."
+![](/doc/filemanager.png)
+
+*Note: After creating/deleting files, SPIFFS filesystem became fragmented. It's perfomance will degrade and affect cycle time. Drone will start to "hickup". Log to fresh SPIFFS. To refresh SPIFFS, "Upload filesystem" using PlatformIO. Disable blackbox for normal usage.*
 
 # Pin allocation
 
