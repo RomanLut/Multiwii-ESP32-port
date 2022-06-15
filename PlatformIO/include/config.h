@@ -1284,6 +1284,8 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
     /* Enable string transmissions from copter to GUI */
     //#define DEBUGMSG
 
+    /* Enable blockbox in Cleanflight format on SPIFFS */
+    //#define  BLACKBOX_ENABLED
 
   /********************************************************************/
   /****           ESCs calibration                                 ****/

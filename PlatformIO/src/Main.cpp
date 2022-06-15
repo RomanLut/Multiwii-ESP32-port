@@ -42,11 +42,9 @@ March  2015     V2.4
 #include "mywifi.h"
 #include "ps3rx.h"
 #include <SPIFFS.h> 
-#include <ESP8266FtpServer.h>  //http://nailbuster.com/nailcode/ESP8266FtpServer.zip
 #include "blackbox.h"
 
 #include "hxrc.h"
-
 
 #ifndef ESP32
 #include <avr/pgmspace.h>
@@ -401,8 +399,6 @@ uint8_t alarmArray[ALRM_FAC_SIZE];           // array
   int16_t baroTemperature;  //tempterature *100
   int32_t baroPressureSum;  // baroPressure * BARO_TAB_SIZE(=21)
 #endif
-
-FtpServer ftpSrv;   //set #define FTP_DEBUG in ESP8266FtpServer.h to see ftp verbose on serial
 
 void annexCode() { // this code is executed at each loop and won't interfere with control loop if it lasts less than 650 microseconds
   static uint32_t calibratedAccTime;
@@ -991,8 +987,6 @@ Serial.println("init8");
 
   Serial.println("init12");
 
-  ftpSrv.begin("quad", "12345678");
-
   Serial.println("init13");
 
   alarm_reset_on_arm();
@@ -1068,7 +1062,9 @@ void go_arm() {
 
       alarm_reset_on_arm();
 
-      //blackboxStart();
+#ifdef BLACKBOX_ENABLED
+      blackboxStart();
+#endif
     }
   } else if(!f.ARMED) {
     blinkLED(2,255,1);
@@ -1685,7 +1681,6 @@ void loop () {
     case 5:
       taskOrder = 0;
       Wifi_handle();
-      ftpSrv.handleFTP();
       break;
   }
  
