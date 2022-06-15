@@ -264,6 +264,8 @@ https://docs.espressif.com/projects/espressif-esp-drone/en/latest/gettingstarted
 
 https://www.youtube.com/watch?v=KIt8LpW8Ajs
 
+https://www.youtube.com/watch?v=BB96u04KlrY
+
 https://github.com/AnishDey27/NodeMCU-FlightController-MPU6050
 
 https://github.com/davidbuzz/ardupilot/blob/esp32_master_new_flat/libraries/AP_HAL_ESP32/README.md
