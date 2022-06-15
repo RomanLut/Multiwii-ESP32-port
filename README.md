@@ -237,6 +237,13 @@ So I disabled GPS modes currently.
 
 Old GPS wiring: https://github.com/RomanLut/mahowii/blob/upstream_shared/doc/gps_code/gps_code.md
 
+# Does it fly Ok?
+
+Drone flyies Ok in Acro and Angle modes. Drone does not have a lot of power, E58 motors are not powerfull for any acrobatics. It is slow flier.
+
+Althold mode could be better. I think performance is limited by Multiwii firmware.  
+
+
 # Other projects
 
 https://github.com/PepeTheFroggie/EspCopter
