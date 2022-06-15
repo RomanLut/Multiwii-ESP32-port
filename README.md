@@ -18,6 +18,8 @@ Goals:
 
 # About this project
 
+Click to see video: http://www.youtube.com/watch?v=lwrkspHjSu4
+
 ![](/doc/quad1.jpg)
 
 The goal is to build quadcopter based on ESP32 microcontroller, Eachine E58 motors and 3D-printed shell.
