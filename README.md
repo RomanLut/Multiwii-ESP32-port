@@ -166,11 +166,15 @@ Calibration:
 
 Drone can write blackbox log to FPIFFS filesystem in Cleanflight log format https://github.com/cleanflight/blackbox-log-viewer
 
+![](/doc/blackbox.png)
+
 To enable logging, uncomment `#define BLACKBOX` in config.h.
 
-Log can be downloaded from using FTP connection. Connect to drone's Wifi AP. Conntect to ftp using User: "quad", password: "12345678" credentials.
+Logs can be downloaded using HTPP of FTP connection. Connect to drone's Wifi AP: user"quad", password:"12345678". Browse "http://192.168.4.1" or connenct to ftp ftp://192.168.4.1 using User: "anonymous", password: "anonymous" credentials.
 
-*Note: Log to fresh SPIFFS. To refresh SPIFFS, "Upload filesystem" using PlatformIO. After creating/deeting files, SPIFFS filesystem became fragmented. It's perfomance will degrade and affect cycle time. Drone will start ot "hickup". Disable blackbox for normal usage."
+![](/doc/filemanager.png)
+
+*Note: After creating/deeting files, SPIFFS filesystem became fragmented. It's perfomance will degrade and affect cycle time. Drone will start ot "hickup". Log to fresh SPIFFS. To refresh SPIFFS, "Upload filesystem" using PlatformIO. Disable blackbox for normal usage.*
 
 # Pin allocation
 
