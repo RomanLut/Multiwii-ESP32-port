@@ -188,24 +188,24 @@ Used pins:
 - 1 - TX0
 - 3 - RX0
 - 
-- 4 - LF Blue LED  
-- 12 - RF Blue LED
-- 13 - LB RB Green LEDS
-- 14 - RB Red LED   
-- 15 - LB Red LED   
+- 4 - Left Front Blue LED  
+- 12 - Right Front Blue LED
+- 13 - Left Back, Right Back Green LEDS
+- 14 - Right Back Red LED   
+- 15 - Left Back Red LED   
 -
 - 21 - SDA 
 - 22 - SCL 
 -
 - 36 - VBAT ADC
 -
-- 25 - BL Motor
-- 26 - BR Motor
+- 25 - Left back Motor
+- 26 - Right Back Motor
 -
 - 27 - BUZZER EN
 -
-- 32 - FR Motor
-- 33 - FL Motor
+- 32 - Right Front Motor
+- 33 - Left Front Motor
 
 Free pins:
 - 0 - (not available on 30 pin board)
