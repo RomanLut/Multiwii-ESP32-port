@@ -277,6 +277,20 @@ https://github.com/RomanLut/hx_espnow_rc
 
 esp32-ps3 https://github.com/jvpernis/esp32-ps3
 
+https://github.com/simondlevy/Hackflight
+
+https://github.com/rtlopez/esp-fc
+
+https://github.com/diegovazquez/ESPPlane
+
+https://github.com/davidoises/FlightController
+
+https://github.com/dgnemre/Simple-Quadcopter-Flight-Controller
+
+https://github.com/espressif/esp-drone/blob/master/docs/en/rst/gettingstarted.rst
+
+https://www.instructables.com/WIFI-CONTROLLED-RC-PLANE/
+
 
 # Mahowii repository 
 
