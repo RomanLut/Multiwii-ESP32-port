@@ -223,7 +223,10 @@ Free pins:
 - 39 - (input only)
 
 # STL files for printing
-TODO share STL files on thingiverse
+
+![](/doc/drawings.jpg)
+
+Solidowkrs 2018 drawings and STL files are available in **Drawings** folder and on Thingiverse https://www.thingiverse.com/thing:5460208
 
 # No GPS modes?
 
