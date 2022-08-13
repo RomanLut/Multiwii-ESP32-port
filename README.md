@@ -188,24 +188,24 @@ Used pins:
 - 1 - TX0
 - 3 - RX0
 - 
-- 4 - LF Blue LED  
-- 12 - RF Blue LED
-- 13 - LB RB Green LEDS
-- 14 - RB Red LED   
-- 15 - LB Red LED   
+- 4 - Left Front Blue LED  
+- 12 - Right Front Blue LED
+- 13 - Left Back, Right Back Green LEDS
+- 14 - Right Back Red LED   
+- 15 - Left Back Red LED   
 -
 - 21 - SDA 
 - 22 - SCL 
 -
 - 36 - VBAT ADC
 -
-- 25 - BL Motor
-- 26 - BR Motor
+- 25 - Left back Motor
+- 26 - Right Back Motor
 -
 - 27 - BUZZER EN
 -
-- 32 - FR Motor
-- 33 - FL Motor
+- 32 - Right Front Motor
+- 33 - Left Front Motor
 
 Free pins:
 - 0 - (not available on 30 pin board)
@@ -237,6 +237,13 @@ So I disabled GPS modes currently.
 
 Old GPS wiring: https://github.com/RomanLut/mahowii/blob/upstream_shared/doc/gps_code/gps_code.md
 
+# Does it fly Ok?
+
+Drone flyies Ok in Acro and Angle modes. Drone does not have a lot of power, E58 motors are not powerfull for any acrobatics. It is slow flier.
+
+Althold mode could be better. I think performance is limited by Multiwii firmware.  
+
+
 # Other projects
 
 https://github.com/PepeTheFroggie/EspCopter
@@ -255,11 +262,18 @@ https://github.com/joshuasrcho/ESP32-Quadcopter
 
 https://docs.espressif.com/projects/espressif-esp-drone/en/latest/gettingstarted.html
 
+https://www.youtube.com/watch?v=KIt8LpW8Ajs
+
+https://www.youtube.com/watch?v=BB96u04KlrY
+
+https://github.com/AnishDey27/NodeMCU-FlightController-MPU6050
+
 https://github.com/davidbuzz/ardupilot/blob/esp32_master_new_flat/libraries/AP_HAL_ESP32/README.md
 
 https://github.com/RomanLut/hx_espnow_rc
 
 esp32-ps3 https://github.com/jvpernis/esp32-ps3
+
 
 # Mahowii repository 
 
