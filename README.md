@@ -5,7 +5,7 @@ Goals:
 - [x] stable flight in ACRO, HORIZON, ANGLE mode 
 - [x] stable fight in AltHold mode 
 - [x] stable fight in MagHold mode 
-- [x] control with Jumper T-Lite, HX_ESPNOW_RC library https://github.com/RomanLut/hx_espnow_rc (done)
+- [x] control with Jumper T-Lite, HX_ESPNOW_RC library https://github.com/RomanLut/hx_espnow_rc 
 - [x] MSP communnication with EZ-GUI through HX_ESPNOW_RC library 
 - [x] add blackbox, download logs from onboard ftp 
 - [x] better documentaion, video
