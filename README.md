@@ -226,7 +226,7 @@ Free pins:
 
 ![](/doc/drawings.jpg)
 
-Solidowkrs 2018 drawings and STL files are available in **Drawings** folder and on Thingiverse https://www.thingiverse.com/thing:5460208
+Solidworks 2018 drawings and STL files are available in **Drawings** folder and on Thingiverse https://www.thingiverse.com/thing:5460208
 
 # No GPS modes?
 
