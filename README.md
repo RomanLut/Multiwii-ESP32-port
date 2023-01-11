@@ -291,6 +291,9 @@ https://github.com/espressif/esp-drone/blob/master/docs/en/rst/gettingstarted.rs
 
 https://www.instructables.com/WIFI-CONTROLLED-RC-PLANE/
 
+https://github.com/subramaniyasais/QuadRotor-Drone
+
+https://github.com/rohanverma94/The-Open-Copter
 
 # Mahowii repository 
 
