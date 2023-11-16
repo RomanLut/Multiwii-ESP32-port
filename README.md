@@ -170,7 +170,7 @@ Calibration:
 
 # Blackbox
 
-Drone can write blackbox log to FPIFFS filesystem in Cleanflight log format https://github.com/cleanflight/blackbox-log-viewer
+Drone can write blackbox log to SPIFFS filesystem in Cleanflight log format https://github.com/cleanflight/blackbox-log-viewer
 
 ![](/doc/blackbox.png)
 
