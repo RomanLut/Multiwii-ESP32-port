@@ -295,6 +295,8 @@ https://github.com/subramaniyasais/QuadRotor-Drone
 
 https://github.com/rohanverma94/The-Open-Copter
 
+https://github.com/pratikPhadte/ESP32-Flight-controller-
+
 # Mahowii repository 
 
 https://github.com/mahowik/mahowii
