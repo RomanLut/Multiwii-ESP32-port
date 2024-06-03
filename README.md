@@ -249,6 +249,8 @@ Althold mode could be better. I think performance is limited by Multiwii firmwar
 
 # Other projects
 
+https://github.com/qqqlab/madflight
+
 https://habr.com/ru/articles/814127/
 
 https://github.com/PepeTheFroggie/EspCopter
