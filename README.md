@@ -248,6 +248,7 @@ Althold mode could be better. I think performance is limited by Multiwii firmwar
 
 
 # Other projects
+https://github.com/okalachev/flix
 
 https://github.com/qqqlab/madflight
 
