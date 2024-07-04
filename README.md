@@ -249,6 +249,8 @@ Althold mode could be better. I think performance is limited by Multiwii firmwar
 
 # Other projects
 
+https://github.com/BossHobby/QUICKSILVER?tab=readme-ov-file
+
 https://github.com/happytm/dRehmFlight?tab=readme-ov-file
 
 https://github.com/okalachev/flix
