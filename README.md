@@ -1,3 +1,6 @@
+> [!NOTE]
+> This firmware is outdated. I would recommend something more modern like [rtlopez/esp-fc](https://github.com/rtlopez/esp-fc/tree/master).
+
 Goals:
 - [x] esp32 port of Mahowii (Multiwii)
 - [x] control with PS3 controller
